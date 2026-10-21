@@ -15,7 +15,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-import interfaz
+from cifrados import interfaz
 import permutacion_series
 import vigenere
 
@@ -87,8 +87,10 @@ class PruebasArchivosYConsola(unittest.TestCase):
         self.proyecto.mkdir()
         self.otra_carpeta = Path(temporal.name) / "otra"
         self.otra_carpeta.mkdir()
-        for nombre in ("interfaz.py", "vigenere.py", "permutacion_series.py"):
-            shutil.copyfile(Path(__file__).resolve().parent / nombre, self.proyecto / nombre)
+        raiz = Path(__file__).resolve().parent.parent
+        for nombre in ("vigenere.py", "permutacion_series.py"):
+            shutil.copyfile(raiz / nombre, self.proyecto / nombre)
+        shutil.copytree(raiz / "cifrados", self.proyecto / "cifrados")
 
     def ejecutar(self, programa="vigenere.py", *argumentos, entrada=None, timeout=10):
         return subprocess.run(

@@ -1,6 +1,6 @@
 # Informe de pruebas — 21 de octubre de 2026
 
-Resultado: **44 pruebas pasan** en Python 3.13.5. Incluyen las 25 pruebas anteriores y 19 nuevas. El conjunto completo terminó en aproximadamente 2,6 segundos en este equipo. Las pruebas nuevas se encuentran en `test_limites.py`.
+Resultado: **44 pruebas pasan** en Python 3.13.5. Incluyen las 25 pruebas anteriores y 19 nuevas. El conjunto completo terminó en aproximadamente 2,6 segundos en este equipo. Las pruebas nuevas se encuentran en `tests/test_limites.py`.
 
 ## Fallos reproducidos y corregidos
 
@@ -46,11 +46,11 @@ Estas pruebas comprueban comportamiento y manejo de errores; no certifican la se
 Desde la carpeta del proyecto:
 
 ```bash
-python3 -m unittest -v
+python3 -m unittest discover -s tests -v
 ```
 
 Solo las pruebas nuevas:
 
 ```bash
-python3 -m unittest -v test_limites
+python3 -m unittest tests.test_limites -v
 ```
