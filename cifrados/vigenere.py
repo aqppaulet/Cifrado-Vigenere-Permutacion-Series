@@ -63,12 +63,15 @@ def _transformar(texto: str, clave: str, direccion: int, espanol: bool) -> str:
     ``direccion`` vale 1 para cifrar y -1 para descifrar.
     Los caracteres que no pertenecen al alfabeto se conservan.
     """
+    # El alfabeto determina cuántas posiciones puede avanzar una letra.
     alfabeto = _obtener_alfabeto(espanol)
     clave = validar_clave(clave, espanol)
     posiciones = _crear_posiciones(alfabeto)
     permitidas = alfabeto + alfabeto.lower()
     desplazamientos = []
 
+    # Convertimos cada letra de la clave en su número de desplazamiento:
+    # A=0, B=1, C=2, etc.
     for letra in clave:
         desplazamientos.append(posiciones[letra])
 
@@ -76,15 +79,18 @@ def _transformar(texto: str, clave: str, direccion: int, espanol: bool) -> str:
     indice_clave = 0
 
     for caracter in texto:
+        # Los espacios, números y símbolos no se cifran ni consumen clave.
         if caracter not in permitidas:
             resultado.append(caracter)
             continue
 
+        # La posición de la clave avanza solamente cuando encontramos una letra.
         letra_mayuscula = caracter.upper()
         posicion_original = posiciones[letra_mayuscula]
         posicion_clave = indice_clave % len(clave)
         desplazamiento = desplazamientos[posicion_clave]
 
+        # La dirección es 1 al cifrar y -1 al descifrar.
         posicion_nueva = posicion_original + direccion * desplazamiento
         posicion_nueva = posicion_nueva % len(alfabeto)
 
@@ -103,8 +109,11 @@ def _transformar_bytes(datos: bytes, clave: bytes, direccion: int) -> bytes:
     resultado = []
 
     for indice, valor in enumerate(datos):
+        # La clave se repite cuando el texto tiene más bytes que la clave.
         posicion_clave = indice % len(clave)
         desplazamiento = clave[posicion_clave]
+
+        # El módulo 256 mantiene cada resultado dentro del rango de un byte.
         nuevo_valor = valor + direccion * desplazamiento
         nuevo_valor = nuevo_valor % 256
         resultado.append(nuevo_valor)
@@ -128,11 +137,16 @@ def _dividir_base64_en_lineas(texto: str) -> str:
 def cifrar(texto: str, clave: str, espanol: bool = False, ampliado: bool = False) -> str:
     """Cifra texto en modo clásico o todos sus bytes UTF-8 en modo ampliado."""
     if not ampliado:
+        # En el modo clásico trabajamos directamente con letras del alfabeto.
         return _transformar(texto, clave, 1, espanol)
 
+    # El modo ampliado trabaja con bytes para poder incluir cualquier carácter.
     clave_validada = validar_clave(clave, espanol, ampliado)
     texto_bytes = texto.encode("utf-8")
     clave_bytes = clave_validada.encode("utf-8")
+
+    # Primero ciframos los bytes y después usamos Base64 para poder guardar
+    # el resultado como texto sin caracteres binarios ilegibles.
     bytes_cifrados = _transformar_bytes(texto_bytes, clave_bytes, 1)
     texto_base64 = base64.b64encode(bytes_cifrados).decode("ascii")
 
@@ -144,6 +158,8 @@ def _decodificar_base64(texto: str) -> bytes:
     texto_sin_espacios = "".join(texto.split())
 
     try:
+        # Se permiten espacios y saltos de línea porque el programa muestra
+        # el Base64 dividido en líneas, pero se eliminan antes de validarlo.
         datos = base64.b64decode(texto_sin_espacios, validate=True)
         base64_generado = base64.b64encode(datos).decode("ascii")
     except (ValueError, binascii.Error) as error:
@@ -164,14 +180,19 @@ def _decodificar_base64(texto: str) -> bytes:
 def descifrar(texto: str, clave: str, espanol: bool = False, ampliado: bool = False) -> str:
     """Descifra texto usando el mismo modo y la misma clave."""
     if not ampliado:
+        # Descifrar es aplicar el mismo proceso con dirección contraria.
         return _transformar(texto, clave, -1, espanol)
 
+    # En el modo ampliado, el resultado recibido es Base64, no texto original.
     clave_validada = validar_clave(clave, espanol, ampliado)
     datos_cifrados = _decodificar_base64(texto)
     clave_bytes = clave_validada.encode("utf-8")
+
+    # Restauramos los bytes originales restando los valores de la clave.
     datos_originales = _transformar_bytes(datos_cifrados, clave_bytes, -1)
 
     try:
+        # Finalmente convertimos los bytes recuperados otra vez a texto UTF-8.
         return datos_originales.decode("utf-8")
     except UnicodeDecodeError as error:
         raise ValueError(
