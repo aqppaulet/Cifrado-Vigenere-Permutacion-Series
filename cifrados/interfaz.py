@@ -2,66 +2,28 @@
 
 import argparse
 from pathlib import Path
-import stat
 from typing import Callable
 
+from .archivos import guardar_resultado, leer_archivo
 
-CARPETA_PROYECTO = Path(__file__).resolve().parent
+
+# La interfaz vive dentro del paquete, pero los resultados pertenecen al proyecto.
+CARPETA_PROYECTO = Path(__file__).resolve().parent.parent
 LINEAS_VISTA_PREVIA = 5
 CARACTERES_POR_LINEA_PREVIA = 200
 
 
 def _ruta_archivo(nombre: str) -> Path:
-    nombre = nombre.strip()
-    if not nombre or nombre in (".", "..") or any(caracter in nombre for caracter in ("/", "\\", "\0")):
-        raise ValueError("Escribe solo el nombre del archivo, por ejemplo mensaje.txt, sin carpetas ni rutas.")
-    if not Path(nombre).suffix:
-        nombre += ".txt"
-    ruta = CARPETA_PROYECTO / nombre
-    try:
-        padre_real = ruta.resolve().parent
-    except RuntimeError as error:
-        raise ValueError("El archivo contiene un enlace circular y no se puede abrir.") from error
-    if padre_real != CARPETA_PROYECTO:
-        raise ValueError("El archivo debe estar dentro de la carpeta del proyecto.")
-    return ruta
+    from .archivos import ruta_archivo
+    return ruta_archivo(nombre, CARPETA_PROYECTO)
 
 
 def _leer_archivo(nombre: str) -> str:
-    ruta = _ruta_archivo(nombre)
-    if not stat.S_ISREG(ruta.stat().st_mode):
-        raise ValueError("Elige un archivo de texto; no se admiten carpetas, tuberías ni dispositivos.")
-    # newline="" conserva también los saltos CRLF de los archivos originales.
-    try:
-        with ruta.open("r", encoding="utf-8", newline="") as archivo:
-            return archivo.read()
-    except UnicodeDecodeError as error:
-        raise ValueError("El archivo no está codificado en UTF-8. Guárdalo como texto UTF-8 e inténtalo de nuevo.") from error
+    return leer_archivo(nombre, CARPETA_PROYECTO)
 
 
 def _guardar_resultado(texto: str, prefijo: str) -> Path:
-    numero = 1
-    while True:
-        nombre = f"{prefijo}{numero}.txt"
-        ruta = CARPETA_PROYECTO / nombre
-        try:
-            # La creación exclusiva evita sobrescribir incluso con dos programas abiertos.
-            archivo = ruta.open("x", encoding="utf-8", newline="")
-        except FileExistsError:
-            numero += 1
-            continue
-        try:
-            with archivo:
-                archivo.write(texto)
-        except BaseException:
-            # Un error o una interrupción no deben dejar un resultado incompleto.
-            try:
-                ruta.unlink()
-            except OSError:
-                pass
-            raise
-        print(f"Resultado guardado en: {ruta}")
-        return ruta
+    return guardar_resultado(texto, prefijo, CARPETA_PROYECTO)
 
 
 def _elegir(mensaje: str, opciones: tuple[str, ...]) -> str:

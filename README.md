@@ -1,6 +1,14 @@
 # Cifrado y descifrado en Python
 
-Dos implementaciones con menú en español. Requieren Python 3.9 o posterior y no necesitan instalar bibliotecas. Mantén los tres archivos `.py` juntos: `interfaz.py` contiene el menú compartido.
+Dos implementaciones con menú en español. Requieren Python 3.9 o posterior y no necesitan instalar bibliotecas externas.
+
+El proyecto está organizado en tres responsabilidades:
+
+- `cifrados/`: lógica de Vigenère y transposición, independiente de la consola.
+- `cifrados/archivos.py`: lectura y escritura segura de archivos UTF-8.
+- `cifrados/interfaz.py`: menú, argumentos de línea de comandos y presentación.
+
+Los archivos `vigenere.py` y `permutacion_series.py` son los únicos puntos de entrada de consola. Las pruebas están en `tests/`.
 
 Ambos aceptan texto con mayúsculas, minúsculas, números, símbolos, espacios, tildes, `ñ`, emojis y otros caracteres Unicode. También aceptan texto vacío o formado solo por espacios. No se eliminan los espacios iniciales, finales o repetidos. Al descifrar se recupera exactamente el texto original. Vigenère clásico deja intactos los caracteres ajenos al alfabeto elegido; **Vigenère ampliado cifra todo el texto**, incluidos símbolos y espacios. Permutación cambia la posición de todos los caracteres.
 
@@ -130,7 +138,7 @@ assert permutacion_series.descifrar(cifrado, "3 1 4 2") == texto
 Para comprobar los ejemplos, la validación de claves y la recuperación exacta de archivos:
 
 ```bash
-python3 -m unittest -v
+python3 -m unittest discover -s tests -v
 ```
 
 La suite incluye 44 pruebas, 500 textos Unicode aleatorios en cuatro modos, textos grandes, 12 procesos simultáneos y errores simulados de escritura. Las pruebas usan carpetas temporales y no modifican tus resultados. Consulta [INFORME_PRUEBAS.md](INFORME_PRUEBAS.md) para ver los fallos encontrados, sus correcciones y las limitaciones que siguen presentes.
