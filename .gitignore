@@ -1,0 +1,26 @@
+# Caché de Python y entornos locales
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Configuración local
+.env
+.env.*
+!.env.example
+.agents/
+.aws/
+.codex/
+
+# Entradas y resultados de las prácticas
+/prueba.txt
+/[cd][VPS][0-9]*.txt
+/resultVig*.txt
+/resultPermu*.txt
+/RESULTADO*.txt
+
+# Paquetes preparados para subir
+/proyecto_github.zip
