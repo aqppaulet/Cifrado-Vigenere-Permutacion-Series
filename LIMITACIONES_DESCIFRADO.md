@@ -12,7 +12,7 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 Texto claro y cifrado deben tener **al menos una letra**. Antes de entrar al algoritmo se preprocesan: minúsculas a mayúsculas, `ñ/Ñ` a `N`, y `áéíóúü/ÁÉÍÓÚÜ` a `AEIOUU`. Se aceptan las formas Unicode compuestas y con acentos combinados. La salida siempre cumple `[A-Z]+`. Por ejemplo, `NiñoÁgil` se convierte en `NINOAGIL`. El descifrado recupera el mensaje preprocesado; no restaura tildes, Ñ ni la capitalización original.
 
-Se rechazan espacios, tabulaciones, saltos de línea, números, signos, emojis y letras distintas de las inglesas y las españolas indicadas. El preprocesamiento no elimina espacios ni signos. Para probar una frase, escribe las palabras juntas: por ejemplo, `HolaMundo` se procesa como `HOLAMUNDO`.
+Solo al cifrar se aceptan y eliminan los espacios comunes del mensaje, incluidos los iniciales, finales y repetidos: `Hola Mundo` se procesa como `HOLAMUNDO`. Al descifrar, el texto cifrado sigue sin admitir espacios. Las claves conservan sus reglas anteriores. Se rechazan tabulaciones, saltos de línea, números, signos, emojis y letras distintas de las inglesas y las españolas indicadas. Un mensaje formado solo por espacios se rechaza porque no queda ninguna letra.
 
 No se admiten textos vacíos. No se exige una longitud múltiplo del tamaño de clave. No hay una longitud máxima fija programada; los archivos y resultados completos deben caber en memoria.
 
@@ -71,7 +71,7 @@ Vectores de comprobación:
 
 ## 4. Archivos e intercambio
 
-Los archivos son texto UTF-8 **sin BOM**, una secuencia de letras admitidas sin espacios ni saltos de línea, tampoco al final. Se aplica el mismo preprocesamiento que a la entrada por línea. Un PDF o un documento de Word no es una entrada válida. Los nombres de archivo sí pueden llevar espacios.
+Los archivos son texto UTF-8 **sin BOM**, una secuencia de letras admitidas sin saltos de línea, tampoco al final. Al cifrar se eliminan los espacios; al descifrar se rechazan. Se aplica el mismo preprocesamiento que a la entrada por línea. Un PDF o un documento de Word no es una entrada válida. Los nombres de archivo sí pueden llevar espacios.
 
 Los archivos generados contienen únicamente el mensaje cifrado o descifrado en A-Z; no se incluyen el nombre del algoritmo ni la clave. El equipo debe comunicar por separado **qué algoritmo utilizó y cuál fue la clave exacta**. Debe conservarse todo el mensaje. La copia de la ventana y el archivo incluyen el resultado completo, aunque la vista previa esté recortada.
 
@@ -81,7 +81,8 @@ Los archivos generados contienen únicamente el mensaje cifrado o descifrado en 
 | --- | --- |
 | `HOLAMUNDO` | Aceptada. |
 | `HolaMundo` | Aceptada y normalizada a `HOLAMUNDO`. |
-| `HOLA MUNDO` | Rechazada por espacio. |
+| `HOLA MUNDO` al cifrar | Aceptada y preprocesada a `HOLAMUNDO`. |
+| Texto cifrado con espacios al descifrar | Rechazado, como antes. |
 | `AÑO`, `CAFÉ`, `pingüino` | Aceptadas; se procesan como `ANO`, `CAFE`, `PINGUINO`. |
 | `ABC123`, `HOLA!` | Rechazadas. |
 | Mensaje vacío o archivo vacío | Rechazado. |

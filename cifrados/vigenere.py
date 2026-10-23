@@ -11,7 +11,7 @@ def validar_clave(clave: str) -> str:
 def _transformar(texto: str, clave: str, direccion: int) -> str:
     """Suma la clave al cifrar (1) y la resta al descifrar (-1)."""
     clave = validar_clave(clave)
-    texto = normalizar_letras(texto)
+    texto = normalizar_letras(texto, eliminar_espacios=direccion == 1)
     desplazamientos = [ord(letra) - ord("A") for letra in clave]
     resultado = []
 

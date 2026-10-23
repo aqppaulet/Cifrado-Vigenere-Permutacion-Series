@@ -87,7 +87,7 @@ class AplicacionCifrado:
         self.boton_archivo = ttk.Button(entrada, text="Elegir archivo…", command=self.elegir_archivo, state="disabled")
         self.boton_archivo.grid(row=1, column=2)
         ttk.Label(
-            entrada, text="Archivo UTF-8: solo letras, sin BOM ni saltos de línea (tampoco al final).",
+            entrada, text="Archivo UTF-8: al cifrar elimina espacios. Sin BOM ni saltos de línea.",
             wraplength=680,
         ).grid(row=2, column=0, columnspan=3, sticky="w")
         ttk.Label(entrada, text="Preprocesado:").grid(row=3, column=0, sticky="w", pady=(4, 0))
@@ -215,7 +215,7 @@ class AplicacionCifrado:
                 texto = leer_ruta_archivo(Path(self.archivo.get()))
             else:
                 texto = self.texto.get()
-            normalizado = normalizar_letras(texto)
+            normalizado = normalizar_letras(texto, eliminar_espacios=self.operacion.get() == "cifrar")
             self.preprocesado.set(normalizado)
             funcion = self.cifrar if self.operacion.get() == "cifrar" else self.descifrar
             resultado = funcion(normalizado, self.clave.get())

@@ -39,13 +39,20 @@
     procesar.textContent = operacion() === "cifrar" ? "Cifrar mensaje" : "Descifrar mensaje";
     $("titulo-resultado").textContent = operacion() === "cifrar" ? "Texto cifrado" : "Texto descifrado";
     const esArchivo = fuente() === "archivo";
+    const esCifrado = operacion() === "cifrar";
+    $("ayuda-texto").textContent = esCifrado
+      ? "Letras y espacios. Los espacios se eliminan al cifrar. Sin números, signos ni saltos de línea."
+      : "Solo letras. Sin espacios, números, signos ni saltos de línea.";
+    $("ayuda-archivo").textContent = esCifrado
+      ? "Texto UTF-8 sin BOM. Los espacios se eliminan al cifrar; sin salto de línea final. El archivo original se conserva."
+      : "Texto UTF-8 sin BOM. Solo letras admitidas, sin espacios ni salto de línea final. El archivo original se conserva.";
     $("entrada-linea").hidden = esArchivo;
     $("entrada-archivo").hidden = !esArchivo;
     texto.disabled = esArchivo;
     archivo.disabled = !esArchivo;
     avisar("Introduce tu clave y el mensaje para comenzar.");
     if (!esArchivo && texto.value) {
-      try { previo.textContent = Cifrados.normalizar(texto.value); }
+      try { previo.textContent = Cifrados.normalizar(texto.value, "El texto", esCifrado); }
       catch (error) { previo.textContent = error.message; }
     }
   }
@@ -79,7 +86,7 @@
       else Cifrados.validarPermutacion(llave);
       const entrada = await leerEntrada();
       if (actual !== revision) return;
-      const preparado = Cifrados.normalizar(entrada);
+      const preparado = Cifrados.normalizar(entrada, "El texto", op === "cifrar");
       const transformar = esVigenere ? Cifrados.vigenere : Cifrados.permutacion;
       resultado = transformar(preparado, llave, op === "descifrar");
       revisionResultado = actual;

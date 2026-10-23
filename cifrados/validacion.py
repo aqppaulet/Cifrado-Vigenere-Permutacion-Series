@@ -4,15 +4,15 @@ import unicodedata
 
 ALFABETO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 REGLAS_TEXTO = (
-    "Preprocesamiento: minúsculas a mayúsculas, ñ/Ñ a N y áéíóúü a AEIOUU. "
-    "El algoritmo recibe solo A-Z. Sin espacios, saltos de línea, números ni símbolos."
+    "Preprocesamiento: a-z a A-Z, ñ a N y áéíóúü a AEIOUU. Solo al cifrar se "
+    "eliminan espacios del mensaje. Sin saltos de línea, números ni símbolos."
 )
 EQUIVALENCIAS = str.maketrans(
     "áéíóúüñÁÉÍÓÚÜÑ", "aeiouunAEIOUUN"
 )
 
 
-def normalizar_letras(valor: str, campo: str = "El texto") -> str:
+def normalizar_letras(valor: str, campo: str = "El texto", *, eliminar_espacios: bool = False) -> str:
     """Quita tildes españolas y normaliza Ñ y mayúsculas antes del algoritmo.
 
     NFC admite tanto «é» como «e + acento combinado». La tabla explícita evita
@@ -21,6 +21,10 @@ def normalizar_letras(valor: str, campo: str = "El texto") -> str:
     """
     if not isinstance(valor, str):
         raise ValueError(f"{campo} debe ser una cadena de letras A-Z.")
+    # Solo el texto claro elimina espacios comunes; claves y descifrado conservan
+    # su validación. No usamos split(): también eliminaría tabulaciones y saltos.
+    if eliminar_espacios:
+        valor = valor.replace(" ", "")
     if not valor:
         raise ValueError(f"{campo} no puede estar vacío; escribe al menos una letra A-Z.")
     resultado = []
@@ -30,7 +34,8 @@ def normalizar_letras(valor: str, campo: str = "El texto") -> str:
             raise ValueError(
                 f"{campo} contiene {caracter!r} en la posición {posicion}. "
                 "Usa letras A-Z/a-z, Ñ/ñ o áéíóúü (también en mayúsculas); "
-                "sin espacios, saltos de línea, números ni símbolos."
+                + ("sin " if eliminar_espacios else "sin espacios, ")
+                + "saltos de línea, números ni símbolos."
             )
         resultado.append(equivalente.upper())
     return "".join(resultado)

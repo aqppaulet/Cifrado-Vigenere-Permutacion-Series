@@ -41,7 +41,7 @@ def validar_clave(clave: str) -> list[int]:
 def _transformar(texto: str, clave: str, inversa: bool) -> str:
     """Procesa el texto en bloques y aplica la permutación solicitada."""
     posiciones = validar_clave(clave)
-    texto = normalizar_letras(texto)
+    texto = normalizar_letras(texto, eliminar_espacios=not inversa)
     tamano_bloque = len(posiciones)
     resultado = []
 

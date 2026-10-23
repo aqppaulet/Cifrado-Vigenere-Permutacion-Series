@@ -7,7 +7,7 @@ La versión web está en **`docs/`** y funciona en el navegador sin instalar Pyt
 - [Reglas para la profesora y el equipo de descifrado](docs/limites.html).
 - [Cómo publicarla en GitHub Pages](PUBLICAR_WEB.md).
 
-El preprocesamiento convierte `NiñoÁgil` en `NINOAGIL` y la clave `LIMÓN` en `LIMON`. El algoritmo recibe solo letras A-Z. El descifrado recupera el texto preprocesado; no restaura Ñ, tildes ni la capitalización original. Se siguen rechazando espacios, números, símbolos y saltos de línea.
+El preprocesamiento convierte `NiñoÁgil` en `NINOAGIL` y la clave `LIMÓN` en `LIMON`. El algoritmo recibe solo letras A-Z. El descifrado recupera el texto preprocesado; no restaura Ñ, tildes ni la capitalización original. Solo al cifrar se aceptan y eliminan espacios del mensaje: `Hola Mundo` se usa como `HOLAMUNDO`. El descifrado y las claves conservan sus reglas. Se siguen rechazando números, símbolos y saltos de línea.
 
 Abre `docs/index.html` directamente, o ejecuta desde esta carpeta:
 
@@ -60,13 +60,14 @@ Los errores indican qué corregir; los datos del formulario se conservan. **Limp
 | --- | --- |
 | Texto claro y texto cifrado | Una o más letras. Antes del algoritmo se normalizan a `ABCDEFGHIJKLMNOPQRSTUVWXYZ`. |
 | Preprocesamiento | Minúsculas a mayúsculas; `ñ/Ñ` a `N`; `áéíóúü` y sus mayúsculas a `AEIOUU`. También acepta estas letras con acentos Unicode combinados. |
-| Caracteres rechazados en los mensajes | Espacios, saltos de línea, tabulaciones, números, símbolos, emojis y letras fuera de A-Z/a-z y las letras españolas indicadas. |
+| Espacios en los mensajes | Solo al cifrar se aceptan y eliminan. Al descifrar se rechazan. |
+| Caracteres rechazados en los mensajes | Saltos de línea, tabulaciones, números, símbolos, emojis y letras fuera de A-Z/a-z y las letras españolas indicadas. |
 | Mensaje vacío | Se rechaza. |
 | Clave de Vigenère | Una o más letras; aplica el mismo preprocesamiento que el mensaje. Ejemplo: `LIMÓN` se usa como `LIMON`. Sin espacios, números ni símbolos. |
 | Clave de permutación | Una permutación de los números `1` a `N`, sin repetir ni omitir posiciones, con `N >= 2`. Separa con espacios o comas. Ejemplo: `3 1 4 2`. |
 | Archivo de entrada | Texto UTF-8 sin BOM, con una sola secuencia de letras, **sin salto de línea final**. |
 
-Los números y separadores de la clave de permutación representan posiciones; el mensaje de ese algoritmo sigue usando solo letras. Se permiten espacios alrededor de esa clave numérica; no se permiten alrededor de los mensajes ni de la clave de Vigenère. El preprocesamiento sustituye las tildes y Ñ indicadas automáticamente, sin eliminar espacios ni otros caracteres inválidos. Por ejemplo, `NiñoÁgil` se convierte en `NINOAGIL`. Al descifrar se recupera ese texto preprocesado; las tildes, la Ñ y la capitalización original no se restauran.
+Los números y separadores de la clave de permutación representan posiciones; el mensaje de ese algoritmo sigue usando solo letras. Se permiten espacios alrededor de esa clave numérica; no se permiten en la clave de Vigenère ni en el texto cifrado al descifrar. Al cifrar, los espacios del mensaje se eliminan. El preprocesamiento sustituye las tildes y Ñ indicadas automáticamente, sin eliminar otros caracteres inválidos. Por ejemplo, `NiñoÁgil` se convierte en `NINOAGIL`. Al descifrar se recupera ese texto preprocesado; las tildes, la Ñ y la capitalización original no se restauran.
 
 No hay un límite fijo de longitud del mensaje. La clave de Vigenère puede ser más larga o más corta que el mensaje. La clave de permutación puede definir un bloque mayor que el mensaje. Ambos algoritmos cargan el contenido completo en memoria.
 

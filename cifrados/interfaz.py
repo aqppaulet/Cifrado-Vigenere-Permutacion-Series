@@ -60,10 +60,10 @@ def ejecutar(
     operaciones.add_argument("--descifrar", action="store_true", help="Recuperar el texto claro en mayúsculas.")
     parser.add_argument("-k", "--clave", help=ayuda_clave)
     entradas = parser.add_mutually_exclusive_group()
-    entradas.add_argument("-t", "--texto", help="Letras: normaliza mayúsculas, ñ y acentos; sin espacios ni signos.")
+    entradas.add_argument("-t", "--texto", help="Normaliza letras, ñ y acentos; solo al cifrar elimina espacios. Sin signos.")
     entradas.add_argument(
         "-a", "--archivo",
-        help="Nombre de archivo UTF-8 del proyecto: solo letras, sin BOM ni salto final.",
+        help="Archivo UTF-8 del proyecto: sin BOM ni salto final; al cifrar elimina espacios.",
     )
     args = parser.parse_args()
 

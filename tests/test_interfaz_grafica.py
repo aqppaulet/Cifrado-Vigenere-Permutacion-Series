@@ -92,13 +92,13 @@ class PruebasVentana(unittest.TestCase):
     def test_preprocesado_visible_en_linea_y_archivo(self):
         app = self.crear()
         app.clave.set("LIMÓN")
-        app.texto.set("NiñoÁéíóúÜ")
+        app.texto.set(" Niño ÁéíóúÜ ")
         self.procesar()
         esperado = app.resultado
         self.assertTrue(esperado)
         self.assertEqual(app.preprocesado.get(), "NINOAEIOUU")
         ruta = self.carpeta / "entrada.txt"
-        ruta.write_text("Nin\u0303oÁéíóúÜ", encoding="utf-8")
+        ruta.write_text(" Nin\u0303o ÁéíóúÜ ", encoding="utf-8")
         app.fuente.set("archivo")
         app.archivo.set(str(ruta))
         self.procesar()
@@ -138,7 +138,7 @@ class PruebasVentana(unittest.TestCase):
 
     def test_errores_de_clave_y_texto_permiten_corregir_sin_guardar(self):
         app = self.crear()
-        for clave, texto in (("", "ABC"), ("A!", "ABC"), ("B", ""), ("B", "A B"), ("B", "123"), ("B", "ABC\n")):
+        for clave, texto in (("", "ABC"), ("A!", "ABC"), ("B", ""), ("B", "   "), ("B", "123"), ("B", "ABC\n")):
             with self.subTest(clave=clave, texto=texto):
                 app.clave.set(clave)
                 app.texto.set(texto)
@@ -156,7 +156,7 @@ class PruebasVentana(unittest.TestCase):
         app.clave.set("B")
         app.fuente.set("archivo")
         self.procesar()
-        for datos in (b"", b"ABC\n", b"ABC\r\n", b"A B", "🙂".encode(), b"\xef\xbb\xbfABC", b"\xff"):
+        for datos in (b"", b"ABC\n", b"ABC\r\n", b"   ", "🙂".encode(), b"\xef\xbb\xbfABC", b"\xff"):
             with self.subTest(datos=datos):
                 ruta = self.carpeta / "entrada.txt"
                 ruta.write_bytes(datos)

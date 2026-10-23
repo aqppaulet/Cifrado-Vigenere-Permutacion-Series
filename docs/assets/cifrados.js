@@ -7,7 +7,9 @@
     Array.from("áéíóúüñÁÉÍÓÚÜÑ", (letra, i) => [letra, "aeiouunAEIOUUN"[i]])
   );
 
-  function normalizar(texto, campo = "El texto") {
+  function normalizar(texto, campo = "El texto", eliminarEspacios = false) {
+    // Solo se quita el espacio común del texto claro; no tabulaciones o saltos.
+    if (eliminarEspacios && typeof texto === "string") texto = texto.replace(/ /g, "");
     if (typeof texto !== "string" || !texto.length) {
       throw new Error(`${campo} debe contener al menos una letra.`);
     }
@@ -21,7 +23,8 @@
       if (!/^[A-Za-z]$/.test(letra)) {
         throw new Error(
           `${campo}: carácter ${JSON.stringify(caracter)} en la posición ${posicion}. ` +
-          "Usa letras, ñ o áéíóúü. No se admiten espacios, saltos de línea, números ni símbolos."
+          "Usa letras, ñ o áéíóúü. No se admiten " +
+          (eliminarEspacios ? "" : "espacios, ") + "saltos de línea, números ni símbolos."
         );
       }
       resultado += letra.toUpperCase();
@@ -45,7 +48,7 @@
 
   function vigenere(texto, clave, descifrar = false) {
     const preparada = normalizar(clave, "La clave");
-    const mensaje = normalizar(texto);
+    const mensaje = normalizar(texto, "El texto", !descifrar);
     const direccion = descifrar ? -1 : 1;
     let salida = "";
     for (let i = 0; i < mensaje.length; i += 1) {
@@ -58,7 +61,7 @@
 
   function permutacion(texto, clave, descifrar = false) {
     const posiciones = validarPermutacion(clave);
-    const mensaje = normalizar(texto);
+    const mensaje = normalizar(texto, "El texto", !descifrar);
     const salida = [];
     for (let inicio = 0; inicio < mensaje.length; inicio += posiciones.length) {
       const bloque = mensaje.slice(inicio, inicio + posiciones.length);

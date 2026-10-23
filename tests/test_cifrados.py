@@ -48,10 +48,21 @@ class PruebasTexto(unittest.TestCase):
 
     def test_ambos_algoritmos_rechazan_caracteres_ajenos_y_vacio(self):
         for modulo, clave in ((vigenere, "LEMON"), (permutacion_series, "3 1 4 2")):
-            for texto in ("", " ", " ABC", "ABC ", "A B", "A\nB", "ABC\n", "A\r\n", "A\tB", "1", "!", "🙂", "ß", "ı", "ﬃ", "Ａ", "\ufeffABC", "A\x00", None, 123):
+            for texto in ("", " ", "A\nB", "ABC\n", "A\r\n", "A\tB", "A\u00a0B", "1", "!", "🙂", "ß", "ı", "ﬃ", "Ａ", "\ufeffABC", "A\x00", None, 123):
                 for funcion in (modulo.cifrar, modulo.descifrar):
                     with self.subTest(modulo=modulo.__name__, texto=texto, funcion=funcion.__name__), self.assertRaises(ValueError):
                         funcion(texto, clave)
+
+    def test_espacios_solo_se_eliminan_al_cifrar(self):
+        for modulo, clave in ((vigenere, "LIMÓN"), (permutacion_series, "3 1 4 2")):
+            for texto in ("Niño Ágil", " Niño  Ágil ", "N I N O A G I L"):
+                with self.subTest(modulo=modulo.__name__, texto=texto):
+                    cifrado = modulo.cifrar(texto, clave)
+                    self.assertEqual(cifrado, modulo.cifrar("NINOAGIL", clave))
+                    self.assertEqual(modulo.descifrar(cifrado, clave), "NINOAGIL")
+            for texto in (" ABC", "ABC ", "A B"):
+                with self.subTest(modulo=modulo.__name__, cifrado=texto), self.assertRaises(ValueError):
+                    modulo.descifrar(texto, clave)
 
     def test_error_identifica_caracter_y_posicion(self):
         for modulo, clave in ((vigenere, "B"), (permutacion_series, "2 1")):
@@ -131,7 +142,7 @@ class PruebasConsola(unittest.TestCase):
         self.assertFalse(list(self.otra_carpeta.glob("*.txt")))
 
     def test_preprocesamiento_identico_en_argumentos_y_archivos(self):
-        texto = "NiÑoÁéíóúÜ"
+        texto = " NiÑo ÁéíóúÜ "
         (self.proyecto / "entrada.txt").write_text(texto, encoding="utf-8")
         for programa, clave, prefijo in (("vigenere.py", "LIMÓN", "V"), ("permutacion_series.py", "3 1 4 2", "P")):
             for numero, entrada in enumerate((("-t", texto), ("-a", "entrada.txt")), start=1):
@@ -146,7 +157,7 @@ class PruebasConsola(unittest.TestCase):
     def test_argumentos_y_archivos_rechazan_texto_invalido_sin_guardar(self):
         for programa, clave in (("vigenere.py", "B"), ("permutacion_series.py", "2 1")):
             for operacion in ("--cifrar", "--descifrar"):
-                for texto in ("", "A B", "123", "A!", "ABC\n", "\ufeffABC", "ß"):
+                for texto in ("", "   ", "123", "A!", "ABC\n", "\ufeffABC", "ß"):
                     (self.proyecto / "entrada.txt").write_text(texto, encoding="utf-8")
                     for entrada in (("-t", texto), ("-a", "entrada.txt")):
                         with self.subTest(programa=programa, operacion=operacion, texto=texto, entrada=entrada[0]):
