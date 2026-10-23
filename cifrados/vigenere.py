@@ -1,201 +1,35 @@
-"""Implementación de Vigenère clásico, español y ampliado."""
+"""Vigenère clásico sobre las 26 letras inglesas; A=0, ..., Z=25."""
 
-import base64
-import binascii
-
-
-ALFABETO = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-ALFABETO_ESPANOL = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ"
+from .validacion import ALFABETO, normalizar_letras
 
 
-def validar_clave(clave: str, espanol: bool = False, ampliado: bool = False) -> str:
-    """Valida y normaliza una clave según el modo seleccionado."""
-    if ampliado:
-        if espanol:
-            raise ValueError("Elige un solo modo: ampliado o español clásico.")
-        if not clave:
-            raise ValueError("La clave no puede estar vacía; puede contener letras, números, símbolos y espacios.")
-        return clave
-
-    if espanol:
-        alfabeto = ALFABETO_ESPANOL
-    else:
-        alfabeto = ALFABETO
-
-    clave = clave.strip()
-    permitidas = alfabeto + alfabeto.lower()
-
-    clave_invalida = not clave
-    for letra in clave:
-        if letra not in permitidas:
-            clave_invalida = True
-            break
-
-    if clave_invalida:
-        detalle = "A-Z y Ñ" if espanol else "A-Z"
-        raise ValueError(f"La clave debe contener únicamente letras {detalle}, sin espacios ni tildes.")
-
-    return clave.upper()
+def validar_clave(clave: str) -> str:
+    """Preprocesa la clave de letras y devuelve únicamente A-Z."""
+    return normalizar_letras(clave, "La clave de Vigenère")
 
 
-def _obtener_alfabeto(espanol: bool) -> str:
-    """Devuelve el alfabeto que usará el modo clásico."""
-    if espanol:
-        return ALFABETO_ESPANOL
-    return ALFABETO
-
-
-def _crear_posiciones(alfabeto: str) -> dict[str, int]:
-    """Crea una tabla que relaciona cada letra con su posición."""
-    posiciones = {}
-    indice = 0
-
-    for letra in alfabeto:
-        posiciones[letra] = indice
-        indice += 1
-
-    return posiciones
-
-
-def _transformar(texto: str, clave: str, direccion: int, espanol: bool) -> str:
-    """Aplica el desplazamiento de Vigenère a las letras del texto.
-
-    ``direccion`` vale 1 para cifrar y -1 para descifrar.
-    Los caracteres que no pertenecen al alfabeto se conservan.
-    """
-    # El alfabeto determina cuántas posiciones puede avanzar una letra.
-    alfabeto = _obtener_alfabeto(espanol)
-    clave = validar_clave(clave, espanol)
-    posiciones = _crear_posiciones(alfabeto)
-    permitidas = alfabeto + alfabeto.lower()
-    desplazamientos = []
-
-    # Convertimos cada letra de la clave en su número de desplazamiento:
-    # A=0, B=1, C=2, etc.
-    for letra in clave:
-        desplazamientos.append(posiciones[letra])
-
+def _transformar(texto: str, clave: str, direccion: int) -> str:
+    """Suma la clave al cifrar (1) y la resta al descifrar (-1)."""
+    clave = validar_clave(clave)
+    texto = normalizar_letras(texto)
+    desplazamientos = [ord(letra) - ord("A") for letra in clave]
     resultado = []
-    indice_clave = 0
 
-    for caracter in texto:
-        # Los espacios, números y símbolos no se cifran ni consumen clave.
-        if caracter not in permitidas:
-            resultado.append(caracter)
-            continue
-
-        # La posición de la clave avanza solamente cuando encontramos una letra.
-        letra_mayuscula = caracter.upper()
-        posicion_original = posiciones[letra_mayuscula]
-        posicion_clave = indice_clave % len(clave)
-        desplazamiento = desplazamientos[posicion_clave]
-
-        # La dirección es 1 al cifrar y -1 al descifrar.
-        posicion_nueva = posicion_original + direccion * desplazamiento
-        posicion_nueva = posicion_nueva % len(alfabeto)
-
-        nueva_letra = alfabeto[posicion_nueva]
-        if caracter.islower():
-            nueva_letra = nueva_letra.lower()
-
-        resultado.append(nueva_letra)
-        indice_clave += 1
+    for indice, letra in enumerate(texto):
+        # Cada letra consume una posición de la clave; esta se repite completa.
+        desplazamiento = desplazamientos[indice % len(clave)]
+        posicion = ord(letra) - ord("A")
+        # El módulo 26 hace que el desplazamiento vuelva a A después de Z.
+        resultado.append(ALFABETO[(posicion + direccion * desplazamiento) % 26])
 
     return "".join(resultado)
 
 
-def _transformar_bytes(datos: bytes, clave: bytes, direccion: int) -> bytes:
-    """Aplica suma o resta modular a cada byte del texto."""
-    resultado = []
-
-    for indice, valor in enumerate(datos):
-        # La clave se repite cuando el texto tiene más bytes que la clave.
-        posicion_clave = indice % len(clave)
-        desplazamiento = clave[posicion_clave]
-
-        # El módulo 256 mantiene cada resultado dentro del rango de un byte.
-        nuevo_valor = valor + direccion * desplazamiento
-        nuevo_valor = nuevo_valor % 256
-        resultado.append(nuevo_valor)
-
-    return bytes(resultado)
+def cifrar(texto: str, clave: str) -> str:
+    """Cifra un mensaje de letras inglesas y devuelve únicamente A-Z."""
+    return _transformar(texto, clave, 1)
 
 
-def _dividir_base64_en_lineas(texto: str) -> str:
-    """Divide Base64 en líneas de 80 caracteres para mostrarlo y guardarlo."""
-    lineas = []
-    inicio = 0
-
-    while inicio < len(texto):
-        fin = inicio + 80
-        lineas.append(texto[inicio:fin])
-        inicio = fin
-
-    return "\n".join(lineas)
-
-
-def cifrar(texto: str, clave: str, espanol: bool = False, ampliado: bool = False) -> str:
-    """Cifra texto en modo clásico o todos sus bytes UTF-8 en modo ampliado."""
-    if not ampliado:
-        # En el modo clásico trabajamos directamente con letras del alfabeto.
-        return _transformar(texto, clave, 1, espanol)
-
-    # El modo ampliado trabaja con bytes para poder incluir cualquier carácter.
-    clave_validada = validar_clave(clave, espanol, ampliado)
-    texto_bytes = texto.encode("utf-8")
-    clave_bytes = clave_validada.encode("utf-8")
-
-    # Primero ciframos los bytes y después usamos Base64 para poder guardar
-    # el resultado como texto sin caracteres binarios ilegibles.
-    bytes_cifrados = _transformar_bytes(texto_bytes, clave_bytes, 1)
-    texto_base64 = base64.b64encode(bytes_cifrados).decode("ascii")
-
-    return _dividir_base64_en_lineas(texto_base64)
-
-
-def _decodificar_base64(texto: str) -> bytes:
-    """Valida que el Base64 sea válido y tenga la forma que genera el programa."""
-    texto_sin_espacios = "".join(texto.split())
-
-    try:
-        # Se permiten espacios y saltos de línea porque el programa muestra
-        # el Base64 dividido en líneas, pero se eliminan antes de validarlo.
-        datos = base64.b64decode(texto_sin_espacios, validate=True)
-        base64_generado = base64.b64encode(datos).decode("ascii")
-    except (ValueError, binascii.Error) as error:
-        raise ValueError(
-            "El cifrado ampliado debe ser Base64 válido. "
-            "Copia el resultado completo o lee su archivo."
-        ) from error
-
-    if base64_generado != texto_sin_espacios:
-        raise ValueError(
-            "El cifrado ampliado debe ser Base64 válido. "
-            "Copia el resultado completo o lee su archivo."
-        )
-
-    return datos
-
-
-def descifrar(texto: str, clave: str, espanol: bool = False, ampliado: bool = False) -> str:
-    """Descifra texto usando el mismo modo y la misma clave."""
-    if not ampliado:
-        # Descifrar es aplicar el mismo proceso con dirección contraria.
-        return _transformar(texto, clave, -1, espanol)
-
-    # En el modo ampliado, el resultado recibido es Base64, no texto original.
-    clave_validada = validar_clave(clave, espanol, ampliado)
-    datos_cifrados = _decodificar_base64(texto)
-    clave_bytes = clave_validada.encode("utf-8")
-
-    # Restauramos los bytes originales restando los valores de la clave.
-    datos_originales = _transformar_bytes(datos_cifrados, clave_bytes, -1)
-
-    try:
-        # Finalmente convertimos los bytes recuperados otra vez a texto UTF-8.
-        return datos_originales.decode("utf-8")
-    except UnicodeDecodeError as error:
-        raise ValueError(
-            "No se pudo recuperar texto UTF-8. "
-            "Revisa la clave, el modo y que el cifrado esté completo."
-        ) from error
+def descifrar(texto: str, clave: str) -> str:
+    """Recupera el texto en mayúsculas con la misma clave del cifrado."""
+    return _transformar(texto, clave, -1)

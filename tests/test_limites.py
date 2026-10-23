@@ -21,62 +21,35 @@ import vigenere
 
 
 class PruebasAleatorias(unittest.TestCase):
-    def test_500_textos_unicode_en_cuatro_modos(self):
-        azar = random.Random(20261021)
-        frecuentes = string.printable + "ÁéíóúÑñßıﬃ🙂👩🏽‍💻中文\u0301\x00\u2028\ufeff"
+    def test_500_mensajes_ingleses_y_claves(self):
+        azar = random.Random(20261023)
         for caso in range(500):
-            caracteres = []
-            for _ in range(azar.randrange(257)):
-                if azar.random() < 0.7:
-                    caracteres.append(azar.choice(frecuentes))
-                else:
-                    codigo = azar.randrange(0x110000 - 0x800)
-                    caracteres.append(chr(codigo if codigo < 0xD800 else codigo + 0x800))
-            texto = "".join(caracteres)
-            for opciones, alfabeto in (
-                ({}, string.ascii_letters),
-                ({"espanol": True}, string.ascii_letters + "Ññ"),
-                ({"ampliado": True}, frecuentes),
-            ):
-                clave = "".join(azar.choice(alfabeto) for _ in range(azar.randrange(1, 41)))
-                with self.subTest(caso=caso, modo=opciones):
-                    cifrado = vigenere.cifrar(texto, clave, **opciones)
-                    self.assertEqual(vigenere.descifrar(cifrado, clave, **opciones), texto)
+            texto = "".join(azar.choice(string.ascii_letters) for _ in range(azar.randrange(1, 257)))
+            clave = "".join(azar.choice(string.ascii_letters) for _ in range(azar.randrange(1, 41)))
+            with self.subTest(caso=caso, modo="vigenere"):
+                cifrado = vigenere.cifrar(texto, clave)
+                self.assertTrue(set(cifrado) <= set(string.ascii_uppercase))
+                self.assertEqual(len(cifrado), len(texto))
+                self.assertEqual(vigenere.descifrar(cifrado, clave), texto.upper())
             orden = list(range(1, azar.randrange(2, 65) + 1))
             azar.shuffle(orden)
             clave = ", ".join(map(str, orden))
             with self.subTest(caso=caso, modo="permutacion"):
                 cifrado = permutacion_series.cifrar(texto, clave)
-                self.assertCountEqual(cifrado, texto)
-                self.assertEqual(permutacion_series.descifrar(cifrado, clave), texto)
+                self.assertCountEqual(cifrado, texto.upper())
+                self.assertEqual(permutacion_series.descifrar(cifrado, clave), texto.upper())
 
-    def test_archivo_grande_recupera_el_contenido_en_todos_los_modos(self):
-        texto = ("AaZz Áé Ññ 0123 @#$ 🙂\r\n" * 30000) + "  FIN  "
-        for opciones in ({}, {"espanol": True}, {"ampliado": True}):
-            with self.subTest(opciones=opciones):
-                cifrado = vigenere.cifrar(texto, "Clave", **opciones)
-                self.assertEqual(vigenere.descifrar(cifrado, "Clave", **opciones), texto)
-        cifrado = permutacion_series.cifrar(texto, "7 1 6 2 5 3 4")
-        self.assertEqual(permutacion_series.descifrar(cifrado, "7 1 6 2 5 3 4"), texto)
+    def test_mensaje_grande_en_ambos_algoritmos(self):
+        texto = "AaZz" * 250000
+        for modulo, clave in ((vigenere, "Clave"), (permutacion_series, "7 1 6 2 5 3 4")):
+            with self.subTest(modulo=modulo.__name__):
+                cifrado = modulo.cifrar(texto, clave)
+                self.assertEqual(modulo.descifrar(cifrado, clave), texto.upper())
 
     def test_permutacion_clave_mayor_que_el_texto(self):
         clave = " ".join(map(str, range(100, 0, -1)))
-        self.assertEqual(permutacion_series.cifrar("A🙂 ", clave), " 🙂A")
-        self.assertEqual(permutacion_series.descifrar(" 🙂A", clave), "A🙂 ")
-
-    def test_base64_no_canonico_se_rechaza(self):
-        # Relleno de más y bits de relleno alterados no son salidas del programa.
-        for texto in ("g2Jj=", "g2Jj====", "DvR="):
-            with self.subTest(texto=texto), self.assertRaisesRegex(ValueError, "Base64"):
-                vigenere.descifrar(texto, "K", ampliado=True)
-
-    def test_base64_envuelto_con_espacios_y_crlf_se_acepta(self):
-        self.assertEqual(vigenere.descifrar(" \r\ng2\tJj\n ", "B", ampliado=True), "A !")
-
-    def test_claves_extremas_invalidas_dan_valueerror(self):
-        for clave in ("9" * 5000, "1 2 2", "0 1", "-1 2", "1.0 2", "١ ٢", "１ ２"):
-            with self.subTest(clave=clave[:40]), self.assertRaises(ValueError):
-                permutacion_series.cifrar("", clave)
+        self.assertEqual(permutacion_series.cifrar("ABC", clave), "CBA")
+        self.assertEqual(permutacion_series.descifrar("CBA", clave), "ABC")
 
 
 class PruebasArchivosYConsola(unittest.TestCase):
@@ -139,7 +112,7 @@ class PruebasArchivosYConsola(unittest.TestCase):
         (self.proyecto / "cV1.txt").write_text("Conservar", encoding="utf-8")
 
         def cifrar(indice):
-            texto = f"Mensaje {indice}: AaZz"
+            texto = "MENSAJE" + string.ascii_uppercase[indice] + "AaZz"
             return texto, self.ejecutar("vigenere.py", "--cifrar", "-k", "B", "-t", texto)
 
         with ThreadPoolExecutor(max_workers=6) as grupo:
@@ -160,31 +133,6 @@ class PruebasArchivosYConsola(unittest.TestCase):
         self.assertEqual((self.proyecto / "cV2.txt").read_text(), "BCDE")
         for nombre in ("cV1.txt", "cV3.txt", "dV1.txt", "cP1.txt", "dP1.txt"):
             self.assertEqual((self.proyecto / nombre).read_text(), "Conservar")
-
-    def test_fin_de_entrada_no_crea_resultados_incompletos(self):
-        for entrada in ("", "1\n", "1\n3\n", "1\n3\nClave\n2\nTexto sin FIN\n"):
-            with self.subTest(entrada=entrada):
-                proceso = self.ejecutar(entrada=entrada)
-                self.assertEqual(proceso.returncode, 0, proceso.stderr)
-                self.assertNotIn("Traceback", proceso.stderr)
-                self.assertFalse(list(self.proyecto.glob("cV*.txt")))
-
-    def test_menu_se_recupera_de_opciones_y_archivos_invalidos(self):
-        (self.proyecto / "entrada.txt").write_text("ABCD", encoding="utf-8")
-        proceso = self.ejecutar(
-            "permutacion_series.py",
-            entrada="x\n1\n1 1\n3 1 4 2\n9\n3\ninexistente\nentrada\n0\n",
-        )
-        self.assertEqual(proceso.returncode, 0, proceso.stderr)
-        self.assertIn("Clave inválida", proceso.stdout)
-        self.assertIn("No se pudo leer", proceso.stdout)
-        self.assertEqual((self.proyecto / "cP1.txt").read_text(), "CADB")
-
-    def test_textos_que_empiezan_con_guion_en_argumentos(self):
-        proceso = self.ejecutar("vigenere.py", "--cifrar", "--ampliado", "--clave=-#", "--texto=-Hola !")
-        self.assertEqual(proceso.returncode, 0, proceso.stderr)
-        self.assertEqual(vigenere.descifrar((self.proyecto / "cV1.txt").read_text(), "-#", ampliado=True), "-Hola !")
-
 
 class PruebasEscrituraFallida(unittest.TestCase):
     def test_fallo_de_escritura_elimina_solo_el_resultado_parcial(self):
@@ -227,15 +175,17 @@ class PruebasEscrituraFallida(unittest.TestCase):
 
 
 class PruebasLimitaciones(unittest.TestCase):
-    """Documenta limitaciones del algoritmo; estas pruebas no prometen detección de daños."""
+    """Los formatos válidos no garantizan la clave correcta ni la integridad."""
 
-    def test_clave_equivocada_puede_producir_utf8_valido(self):
-        cifrado = vigenere.cifrar("Hola", "B", ampliado=True)
-        self.assertEqual(vigenere.descifrar(cifrado, "C", ampliado=True), "Gnk`")
+    def test_clave_equivocada_puede_producir_texto_valido(self):
+        cifrado = vigenere.cifrar("HOLA", "B")
+        self.assertEqual(vigenere.descifrar(cifrado, "C"), "GNKZ")
+        cifrado = permutacion_series.cifrar("ABCD", "2 1")
+        self.assertEqual(permutacion_series.descifrar(cifrado, "1 2"), "BADC")
 
-    def test_recorte_en_limite_base64_puede_pasar_desapercibido(self):
-        cifrado = vigenere.cifrar("Hola mundo", "B", ampliado=True)
-        self.assertEqual(vigenere.descifrar(cifrado[:4], "B", ampliado=True), "Hol")
+    def test_recorte_de_letras_puede_pasar_desapercibido(self):
+        cifrado = vigenere.cifrar("HOLAMUNDO", "B")
+        self.assertEqual(vigenere.descifrar(cifrado[:3], "B"), "HOL")
 
 
 if __name__ == "__main__":

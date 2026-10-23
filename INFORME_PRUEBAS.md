@@ -1,56 +1,66 @@
-# Informe de pruebas — 21 de octubre de 2026
+# Informe de pruebas — 23 de octubre de 2026
 
-Resultado: **44 pruebas pasan** en Python 3.13.5. Incluyen las 25 pruebas anteriores y 19 nuevas. El conjunto completo terminó en aproximadamente 2,6 segundos en este equipo. Las pruebas nuevas se encuentran en `tests/test_limites.py`.
+**46 pruebas pasan, sin omisiones**, en Python 3.13.5. Incluyen trece pruebas de las ventanas con widgets reales de Tkinter en una pantalla virtual Xvfb. La ejecución completa terminó en aproximadamente 4,2 segundos en este equipo.
 
-## Fallos reproducidos y corregidos
+## Aplicación web
 
-| Caso | Comportamiento anterior | Corrección |
-| --- | --- | --- |
-| Leer una tubería con nombre como si fuera un archivo | Los dos programas quedaban esperando datos indefinidamente. Se reprodujo y detuvo el bloqueo mediante un tiempo límite. | Se comprueba que la entrada sea un archivo regular antes de leerla. Se rechazan tuberías, carpetas y dispositivos. |
-| Escritura interrumpida o sin espacio disponible | Quedaba un archivo de salida parcial con un nombre de resultado normal. | Se intenta eliminar el archivo recién creado si falla la escritura o se interrumpe con Ctrl-C. Se conservan los archivos anteriores. Se probaron los fallos mediante simulación de falta de espacio e interrupción; no se llenó el disco. |
-| Cifrado Base64 con bits de relleno alterados | Por ejemplo, `DvR=` se aceptaba igual que `DvQ=` pese a que el programa solo genera la segunda forma. | Se exige la representación Base64 canónica. Se siguen permitiendo espacios y saltos de línea al pegar el cifrado. |
-| Archivo con una sola línea enorme | La vista previa imprimía la línea completa; una entrada de 20 000 caracteres generaba más de 20 000 caracteres en consola. | La vista previa de archivo muestra hasta cinco líneas, con un máximo de 200 caracteres por línea y un aviso si recorta. El archivo completo se conserva. La entrada por teclado sigue mostrando todo. |
-| Archivo con otra codificación | Mostraba el mensaje técnico de decodificación de Python en inglés. | Ahora indica en español que el archivo debe guardarse con codificación UTF-8. |
+**20 pruebas web pasan en Firefox real**, además de las 46 pruebas Python indicadas arriba. Se usa un perfil temporal y un servidor limitado a localhost; la aplicación se sirve bajo una subruta de proyecto para comprobar las rutas de GitHub Pages.
 
-También se sustituyó el ajuste de líneas del Base64 por cortes de longitud fija, manteniendo exactamente el formato generado. Para un texto de 1 000 000 de caracteres, una medición anterior tardó 0,525 s; después del cambio, tres mediciones tardaron 0,095, 0,094 y 0,094 s. Es una comparación orientativa de este equipo, no una garantía de rendimiento.
+- Vectores conocidos y **200 mensajes aleatorios comparados con Python**: cifrado, descifrado y preprocesamiento idénticos, incluidas Ñ, tildes y diéresis en ambas capitalizaciones.
+- Validación de mensajes y claves; rechazo de espacios, saltos, símbolos, Unicode no admitido, BOM y UTF-8 defectuoso.
+- Ambas interfaces: entrada por línea y archivo, preprocesado visible, cifrado, descifrado, limpieza, carga de ejemplo e invalidación del resultado al cambiar la clave.
+- Descarga: nombre de archivo por algoritmo/operación y contenido completo sin salto final.
+- Disposición sin desbordamiento horizontal y controles visibles con anchos de **360, 390, 768 y 1366 píxeles**. Se comprueba además que las acciones principales de ambas páginas sean visibles sin desplazar en portátiles de **1366×768**.
+- Navegación, documento de limitaciones y recursos servidos desde una subruta.
 
-## Cobertura adicional
+Para repetir: `python3 tests/verificar_web.py`. Solo las pruebas necesitan Python y Firefox; el sitio publicado funciona sin ellos, en un navegador moderno.
 
-- **500 textos aleatorios reproducibles**, cada uno comprobado en Vigenère clásico, clásico español, ampliado y permutación: 2 000 recuperaciones exactas adicionales. Se mezclan letras, símbolos, controles, emojis, caracteres combinados y puntos de código Unicode válidos. Se usa una semilla fija para poder repetir los casos.
-- Texto grande de **900 007 bytes en UTF-8**, recuperado exactamente en los cuatro modos. La medición adicional de un millón de caracteres también comprobó la recuperación exacta.
-- **12 procesos simultáneos** creando cifrados: todos los resultados fueron distintos, completos y sin sobrescribir el archivo que ya existía.
-- Archivos inexistentes, carpetas, enlaces circulares, entradas no UTF-8 y tuberías: mensajes de error sin un traceback de Python.
-- Numeración con huecos y separación de las cuatro series `cV`, `dV`, `cP` y `dP`: los archivos existentes se mantienen intactos.
-- Menús con opciones incorrectas, claves inválidas y nombres de archivo equivocados: permiten reintentar.
-- Fin inesperado de la entrada durante la captura de texto: no se genera un cifrado incompleto.
-- Claves de permutación duplicadas, fuera de rango, con 5 000 dígitos o con formato incorrecto: se rechazan.
-- Claves de permutación más largas que el texto: el bloque incompleto se cifra y descifra correctamente.
-- Texto y claves que empiezan por guion en la línea de comandos: funcionan con `--texto=-Hola` y `--clave=-#`.
-- Permisos de escritura denegados: se simula el error y se comprueba que no se cree un resultado.
+La verificación descrita comprueba la web local, no un despliegue remoto. La rama preparada para publicación es `web/github-pages`, con la carpeta `/docs` como origen de GitHub Pages.
 
-Los archivos de las pruebas se crean en carpetas temporales; los resultados reales del proyecto no se usan ni se sobrescriben.
+## Comprobaciones Python y escritorio realizadas
 
-## Limitaciones confirmadas que siguen presentes
+- Vigenère: vector `ATTACKATDAWN` + `LEMON` = `LXFOPVEFRNHR`, vuelta de Z a A, clave de una letra y clave mayor que el mensaje.
+- Permutación: vectores de referencia, bloques completos e incompletos y todas las permutaciones de tamaños 2 a 5 con diferentes restos.
+- **500 mensajes aleatorios reproducibles por algoritmo** (semilla `20261023`): 1000 recuperaciones del texto normalizado en mayúsculas.
+- Mensaje de **un millón de letras** procesado y recuperado por ambos algoritmos.
+- Rechazo de mensajes y claves inválidas: vacío, espacios, saltos de línea, números, símbolos, caracteres Unicode que se expanden al convertir a mayúsculas, BOM y tipos incorrectos.
+- Formato de la clave numérica: separadores equivalentes, duplicados, rangos incorrectos, dígitos no ASCII y posiciones excesivamente largas.
+- Preprocesamiento de Ñ, vocales acentuadas y diéresis en ambas capitalizaciones, incluyendo acentos Unicode combinados; resultados idénticos desde línea y archivo. La clave de Vigenère aplica las mismas reglas.
+- CLI: cifrado y descifrado desde texto y archivos, normalización a mayúsculas, errores sin traceback y eliminación de los modos español/ampliado.
+- Ventanas: inicio de las dos aplicaciones, botones de cifrado y descifrado, etiquetas, selector de archivos fuera del proyecto y cancelación del selector.
+- Ventanas: mensajes de error, corrección de las entradas, limpieza, alternancia de línea/archivo y eliminación del resultado anterior cuando cambia el formulario.
+- Ventanas: campo de texto preprocesado, centrado y tamaño inicial dentro de pantallas de 1366×768, 1024×600 y 800×600, con desplazamiento para acceder al final si el formulario no cabe.
+- Ventanas: vista previa limitada a 2000 letras, copia completa al portapapeles y archivo completo sin salto de línea final.
+- Fallo de guardado gráfico: avisa y permite copiar el resultado calculado.
+- Archivos inexistentes, carpetas, tuberías, enlaces circulares y contenido no UTF-8: se rechazan sin bloquear.
+- Guardado de **12 procesos simultáneos** sin sobrescribir archivos existentes; numeración con huecos y series independientes.
+- Errores simulados de permisos, falta de espacio e interrupción: no quedan resultados parciales, y se mantienen los archivos anteriores.
 
-1. **Una clave incorrecta puede dar texto válido sin avisar.** En el ampliado, cifrar `Hola` con `B` y descifrar con `C` produce `Gnk\x60`, que es texto UTF-8 válido. Las pruebas documentan este comportamiento; no lo presentan como una detección correcta de la clave. En los modos clásicos y en permutación tampoco hay una comprobación de clave correcta.
-2. **Algunos recortes pasan desapercibidos.** Cifrar `Hola mundo` con `B` en modo ampliado y conservar solo los primeros cuatro caracteres Base64 permite recuperar `Hol` sin error. La validación del formato no detecta una pérdida que siga formando Base64 válido. Para detectar estos casos de forma fiable habría que agregar una comprobación de integridad y definir un formato de mensaje nuevo.
-3. **Los archivos deben ser texto UTF-8.** Un PDF, una imagen o texto guardado en otra codificación no se admite como archivo de entrada de estos programas.
-4. **Los archivos se procesan completos en memoria.** Las pruebas con textos grandes no garantizan que un archivo de varios gigabytes quepa en la memoria disponible. No se ha implementado procesamiento por fragmentos.
-5. **`FIN` termina la captura de varias líneas.** Si el contenido incluye una línea con solo `FIN`, debe usarse un archivo o `--texto` para conservarla como parte del mensaje.
-6. **La limpieza de un resultado parcial necesita que Python pueda ejecutarla.** Un corte de energía o una terminación forzada del proceso puede impedirla. Tampoco se simularon daños físicos del disco.
+Las pruebas trabajan con carpetas temporales y no usan resultados personales del proyecto.
 
-Estas pruebas comprueban comportamiento y manejo de errores; no certifican la seguridad criptográfica de los algoritmos.
+## Repetir
 
-## Repetir las pruebas
-
-Desde la carpeta del proyecto:
+Con Python, Tkinter y una sesión gráfica:
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-Solo las pruebas nuevas:
+En Linux con Tkinter y Xvfb instalados, para probar sin mostrar ventanas:
 
 ```bash
-python3 -m unittest tests.test_limites -v
+xvfb-run -a python3 -m unittest discover -s tests -v
 ```
+
+Si falta Tkinter o no hay escritorio, las trece pruebas gráficas se omiten explícitamente. El resto sigue comprobando algoritmos, archivos, argumentos e inicio de las interfaces.
+
+En esta verificación, Tkinter y Xvfb se descargaron y extrajeron en `/tmp` para ejecutar todas las pruebas. No se instalaron paquetes del sistema, porque sudo requería una contraseña de administrador. El ZIP compartible no incluye estas herramientas temporales.
+
+## Límites confirmados
+
+- El descifrado devuelve el texto preprocesado A-Z; no recupera Ñ, tildes, diéresis ni capitalización original.
+- Una clave equivocada o un mensaje recortado puede producir letras válidas sin aviso. No hay comprobación de integridad.
+- Los mensajes completos se mantienen en memoria. La prueba de un millón de letras no garantiza capacidad para archivos de varios gigabytes.
+- Los archivos de entrada deben contener únicamente letras, sin BOM ni salto final. La aplicación preprocesa letras españolas pero no elimina espacios ni símbolos para corregir un mensaje.
+- No se ha comprobado la ejecución visual en Windows o macOS. Los lanzadores `.pyw` y las interfaces usan la biblioteca estándar de Python.
+- Un corte de energía o una terminación forzada puede impedir la limpieza de una escritura parcial.

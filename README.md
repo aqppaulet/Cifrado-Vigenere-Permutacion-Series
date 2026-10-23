@@ -1,148 +1,132 @@
-# Cifrado y descifrado en Python
+# Taller de cifrado A-Z: web para GitHub Pages
 
-Dos implementaciones con menú en español. Requieren Python 3.9 o posterior y no necesitan instalar bibliotecas externas.
+La versión web está en **`docs/`** y funciona en el navegador sin instalar Python ni Tkinter. Tiene interfaces separadas para **Vigenère** y **permutación de series**, entrada por **una línea o archivo**, preprocesamiento visible a A-Z y botones para copiar o descargar el resultado completo.
 
-El proyecto está organizado en tres responsabilidades:
+- [Abrir Vigenère](docs/index.html).
+- [Abrir permutación](docs/permutacion.html).
+- [Reglas para la profesora y el equipo de descifrado](docs/limites.html).
+- [Cómo publicarla en GitHub Pages](PUBLICAR_WEB.md).
 
-- `cifrados/`: lógica de Vigenère y transposición, independiente de la consola.
-- `cifrados/archivos.py`: lectura y escritura segura de archivos UTF-8.
-- `cifrados/interfaz.py`: menú, argumentos de línea de comandos y presentación.
+El preprocesamiento convierte `NiñoÁgil` en `NINOAGIL` y la clave `LIMÓN` en `LIMON`. El algoritmo recibe solo letras A-Z. El descifrado recupera el texto preprocesado; no restaura Ñ, tildes ni la capitalización original. Se siguen rechazando espacios, números, símbolos y saltos de línea.
 
-Los archivos `vigenere.py` y `permutacion_series.py` son los únicos puntos de entrada de consola. Las pruebas están en `tests/`.
+Abre `docs/index.html` directamente, o ejecuta desde esta carpeta:
 
-Ambos aceptan texto con mayúsculas, minúsculas, números, símbolos, espacios, tildes, `ñ`, emojis y otros caracteres Unicode. También aceptan texto vacío o formado solo por espacios. No se eliminan los espacios iniciales, finales o repetidos. Al descifrar se recupera exactamente el texto original. Vigenère clásico deja intactos los caracteres ajenos al alfabeto elegido; **Vigenère ampliado cifra todo el texto**, incluidos símbolos y espacios. Permutación cambia la posición de todos los caracteres.
+```bash
+python3 -m http.server 8000 --directory docs
+```
 
-## Uso con menú
+Después abre `http://localhost:8000`. Para alojarla en GitHub Pages, publica la carpeta **`/docs`** desde la rama que contenga estos cambios. La configuración paso a paso está en [PUBLICAR_WEB.md](PUBLICAR_WEB.md). La rama de esta versión es **`web/github-pages`**; para servirla, activa GitHub Pages usando esa rama y **`/docs`**.
 
-Desde esta carpeta, ejecuta uno de estos comandos:
+No hay compilación, bibliotecas externas ni envío de mensajes, claves o archivos a servidores. Las rutas relativas funcionan bajo la subruta de un repositorio de GitHub Pages. El diseño se adapta a escritorio y móvil; las páginas se desplazan de forma normal cuando el contenido supera la pantalla.
+
+`python3 preparar_paquete.py` genera **`Cifrados_Web.zip`**, que contiene solo la web, y **`Cifrados_AZ.zip`**, con el proyecto completo. Para compartir la web sin GitHub, basta con extraer el ZIP web y abrir `index.html` en un navegador moderno.
+
+Las comprobaciones web se ejecutan con `python3 tests/verificar_web.py` (requiere Firefox solo para probar). El informe está en [INFORME_PRUEBAS.md](INFORME_PRUEBAS.md).
+
+## Versión de escritorio (opcional)
+
+Dos aplicaciones gráficas independientes, en español, para cifrar y descifrar. Cada ventana muestra las reglas, la clave que necesita, el texto preprocesado y un ejemplo. Al abrirse se centra y ajusta al tamaño de la pantalla; en pantallas pequeñas dispone de desplazamiento vertical para mantener accesibles todos los controles. Permiten escribir **una línea** o elegir **un archivo de texto** desde cualquier carpeta.
+
+Solo requieren **Python 3.9 o posterior con Tkinter**. No usan pip, navegador, servidor, conexión a Internet ni bibliotecas externas durante su ejecución.
+
+## Abrir las ventanas
+
+Descomprime el ZIP completo en una carpeta donde puedas guardar archivos. Conserva la carpeta `cifrados` junto a los lanzadores.
+
+**Windows:** con Python instalado y los archivos `.pyw` asociados a Python, abre con doble clic `Vigenere.pyw` o `Permutacion.pyw`. También puedes usar `py Vigenere.pyw` o `py Permutacion.pyw` desde una terminal.
+
+**Linux o macOS:** desde la carpeta del proyecto:
 
 ```bash
 python3 vigenere.py
 python3 permutacion_series.py
 ```
 
+En Debian/Ubuntu, si aparece «Falta Tkinter», instálalo con `sudo apt-get install python3-tk`. En Windows, habilita Tcl/Tk al instalar Python. En macOS, usa una distribución de Python que incluya Tkinter. La interfaz necesita una sesión de escritorio gráfico.
+
+## Cómo usar cualquiera de las dos ventanas
+
 1. Elige **Cifrar** o **Descifrar**.
-2. Para Vigenère, elige **3) Ampliado: todos los caracteres** (opción predeterminada al pulsar Enter), o uno de los dos modos clásicos.
-3. Introduce la clave.
-4. Escribe una línea, pega varias líneas o introduce el nombre de un archivo UTF-8 que esté en la carpeta del proyecto.
-5. Revisa el resultado: se guarda automáticamente en la carpeta del proyecto, sin sobrescribir archivos ni preguntar por el nombre.
+2. Escribe la clave siguiendo las instrucciones de esa ventana.
+3. Selecciona **Una línea** y escribe el mensaje, o **Archivo .txt** y pulsa **Elegir archivo…**.
+4. Pulsa **Cifrar y guardar** o **Descifrar y guardar**. También funciona `Ctrl+Enter`.
+5. Revisa el campo **Preprocesado**, el resultado y su ruta de guardado. **Copiar resultado completo** permite pasarlo a otra persona.
 
-| Programa | Cifrado | Descifrado |
+Los errores indican qué corregir; los datos del formulario se conservan. **Limpiar** borra la clave y las entradas para empezar otro mensaje. Si cambias una entrada, el resultado anterior desaparece para evitar confundirlo con el de la nueva entrada.
+
+## Reglas del mensaje y las claves
+
+| Entrada | Regla |
+| --- | --- |
+| Texto claro y texto cifrado | Una o más letras. Antes del algoritmo se normalizan a `ABCDEFGHIJKLMNOPQRSTUVWXYZ`. |
+| Preprocesamiento | Minúsculas a mayúsculas; `ñ/Ñ` a `N`; `áéíóúü` y sus mayúsculas a `AEIOUU`. También acepta estas letras con acentos Unicode combinados. |
+| Caracteres rechazados en los mensajes | Espacios, saltos de línea, tabulaciones, números, símbolos, emojis y letras fuera de A-Z/a-z y las letras españolas indicadas. |
+| Mensaje vacío | Se rechaza. |
+| Clave de Vigenère | Una o más letras; aplica el mismo preprocesamiento que el mensaje. Ejemplo: `LIMÓN` se usa como `LIMON`. Sin espacios, números ni símbolos. |
+| Clave de permutación | Una permutación de los números `1` a `N`, sin repetir ni omitir posiciones, con `N >= 2`. Separa con espacios o comas. Ejemplo: `3 1 4 2`. |
+| Archivo de entrada | Texto UTF-8 sin BOM, con una sola secuencia de letras, **sin salto de línea final**. |
+
+Los números y separadores de la clave de permutación representan posiciones; el mensaje de ese algoritmo sigue usando solo letras. Se permiten espacios alrededor de esa clave numérica; no se permiten alrededor de los mensajes ni de la clave de Vigenère. El preprocesamiento sustituye las tildes y Ñ indicadas automáticamente, sin eliminar espacios ni otros caracteres inválidos. Por ejemplo, `NiñoÁgil` se convierte en `NINOAGIL`. Al descifrar se recupera ese texto preprocesado; las tildes, la Ñ y la capitalización original no se restauran.
+
+No hay un límite fijo de longitud del mensaje. La clave de Vigenère puede ser más larga o más corta que el mensaje. La clave de permutación puede definir un bloque mayor que el mensaje. Ambos algoritmos cargan el contenido completo en memoria.
+
+Para crear un archivo de ejemplo sin salto final:
+
+```bash
+python3 -c "from pathlib import Path; Path('mensaje.txt').write_text('ATTACKATDAWN', encoding='utf-8')"
+```
+
+## Ejemplos para comprobar la implementación
+
+| Algoritmo | Texto claro | Clave | Texto cifrado |
+| --- | --- | --- | --- |
+| Vigenère | `ATTACKATDAWN` | `LEMON` | `LXFOPVEFRNHR` |
+| Permutación | `ABCDEFGHIJ` | `3 1 4 2` | `CADBGEHFIJ` |
+| Permutación, último bloque de 3 letras | `ABCDEFGHIJK` | `3 1 4 2` | `CADBGEHFKIJ` |
+
+Vigenère usa `A=0`, ..., `Z=25`, suma para cifrar y resta para descifrar, módulo 26. La clave se repite desde el principio para cada mensaje.
+
+Permutación divide el texto en bloques de `N` letras y lee sus posiciones según la clave, numeradas desde 1. Por ejemplo, `ABCD` con `3 1 4 2` produce `CADB`. Si el último bloque está incompleto, se omiten las posiciones que no existen y **no se agrega relleno**. Para descifrar se colocan las letras en esas posiciones originales. Debe conservarse la misma clave en el mismo orden.
+
+El documento [LIMITACIONES_DESCIFRADO.md](LIMITACIONES_DESCIFRADO.md) contiene el acuerdo completo para compartir con la profesora y el equipo de descifrado.
+
+## Archivos de salida
+
+Se guardan automáticamente en la carpeta del programa. Cada operación usa el primer número libre y conserva los archivos existentes.
+
+| Aplicación | Cifrar | Descifrar |
 | --- | --- | --- |
-| Vigenère (clásico o ampliado) | `cV1.txt`, `cV2.txt`, etc. | `dV1.txt`, `dV2.txt`, etc. |
-| Permutación de series | `cP1.txt`, `cP2.txt`, etc. | `dP1.txt`, `dP2.txt`, etc. |
+| Vigenère | `cV1.txt`, `cV2.txt`, ... | `dV1.txt`, `dV2.txt`, ... |
+| Permutación | `cP1.txt`, `cP2.txt`, ... | `dP1.txt`, `dP2.txt`, ... |
 
-Con entrada por teclado (una o varias líneas) se muestra el resultado completo en pantalla. Con entrada desde un archivo se muestran las primeras **5 líneas** del resultado, tanto al cifrar como al descifrar, con hasta **200 caracteres por línea** para evitar vistas previas enormes. Si se recorta contenido, se indica que la vista previa está truncada. El archivo de salida siempre contiene el resultado completo. Esto también se aplica a los argumentos `--texto` y `--archivo`.
+Los resultados contienen solo letras A-Z, sin cabeceras, relleno ni salto final. Las ventanas muestran hasta 2000 letras para que la vista previa siga siendo manejable; el archivo y el botón de copia incluyen el resultado completo. Si no se puede guardar, se muestra un aviso y el resultado sigue disponible para copiar.
 
-Para leer un archivo, introduce solo su nombre, sin rutas. Si escribes `mensaje`, se agrega `.txt` automáticamente. La carpeta del proyecto es la que contiene estos programas, incluso si los ejecutas desde otra carpeta. Las cuatro series (`cV`, `dV`, `cP`, `dP`) tienen numeración independiente y eligen el primer nombre libre de su secuencia. Tanto cifrar como descifrar generan un archivo nuevo.
+## Compartir
 
-En la entrada de varias líneas, una línea con solo `FIN` termina la captura; no forma parte del texto. Las líneas vacías sí se conservan. Si tu texto contiene una línea `FIN` o necesitas conservar exactamente el salto final, usa un archivo.
+Ejecuta `python3 preparar_paquete.py` para crear `Cifrados_AZ.zip`. Envía ese ZIP y pide que lo **extraigan antes de abrir** los programas. Incluye las aplicaciones, los lanzadores de Windows, ejemplos, instrucciones, limitaciones y pruebas. No incluye resultados personales, el historial Git, cachés ni un intérprete de Python. **No es un ejecutable autónomo: el destinatario necesita Python con Tkinter.**
 
-## 1. Vigenère
+## Consola opcional y pruebas
 
-### Ampliado: todos los caracteres Unicode
-
-Ejecuta `python3 vigenere.py`, elige cifrar o descifrar y selecciona el modo **3**. La clave puede contener letras, números, símbolos, emojis y espacios; debe tener al menos un carácter. Las mayúsculas y minúsculas son distintas, y los espacios de la clave se conservan, incluso al inicio o al final. Para descifrar necesitas el mismo modo y la clave exacta.
-
-Esta variante convierte el texto y la clave a UTF-8 y aplica Vigenère sobre un alfabeto de 256 bytes: `cifrado[i] = (texto[i] + clave[i % longitud_clave]) % 256`. Para descifrar resta en vez de sumar. Así también se transforman los bytes de los números, símbolos, espacios y saltos de línea.
-
-El cifrado binario se representa en **Base64** para poder mostrarlo y guardarlo como texto, en líneas de hasta 80 caracteres. Base64 es solo la representación del resultado tras cifrar. Los saltos de línea del texto original se recuperan al descifrar. Puedes pegar el cifrado en la opción de varias líneas o leerlo directamente de su archivo.
+Los mismos algoritmos también aceptan argumentos para automatizar comprobaciones:
 
 ```bash
-python3 vigenere.py --cifrar --ampliado -k "Mi clave #2026 🔑" -t "¡Hola! 123 @# 🙂"
-python3 vigenere.py --descifrar --ampliado -k "Mi clave #2026 🔑" -a cV1.txt
-```
-
-El segundo comando supone que el primero creó `cV1.txt`; usa el nombre que muestre el programa. El descifrado se guardará como `dV1.txt` si está disponible. En línea de comandos debes indicar `--ampliado` tanto al cifrar como al descifrar. Sin `--ampliado` se usa el modo clásico, para conservar la compatibilidad con los ejemplos anteriores.
-
-### Clásico: letras A-Z o alfabeto español
-
-Cada letra se desplaza según la siguiente letra de la clave, que se repite. En el alfabeto de 26 letras, `A` desplaza 0 posiciones, `B` desplaza 1, etc.
-
-```text
-Texto:    ATTACKATDAWN
-Clave:    LEMON
-Cifrado:  LXFOPVEFRNHR
-```
-
-- La clave acepta letras mayúsculas o minúsculas, sin espacios internos ni tildes. Se ignoran espacios al inicio o final de la clave.
-- Se conservan mayúsculas y minúsculas del texto.
-- Los caracteres ajenos al alfabeto elegido, como tildes, números, emojis, signos y saltos de línea, quedan intactos y no consumen letras de la clave.
-- En el modo de 26 letras, `ñ` queda intacta. En el modo español se cifra y puede aparecer en la clave; su posición es entre `N` y `O`.
-- Para descifrar necesitas la misma clave **y el mismo alfabeto**.
-
-```bash
-python3 vigenere.py --cifrar --clave LEMON --texto "ATTACKATDAWN"
-python3 vigenere.py --descifrar --clave LEMON --texto "LXFOPVEFRNHR"
-python3 vigenere.py --cifrar --espanol --clave AÑO --texto "Hola, señor 👋"
-```
-
-## 2. Permutación de series
-
-Aquí se implementa como **transposición por bloques**: la longitud de la clave determina el tamaño del bloque y sus números indican el orden de lectura de las posiciones originales, numeradas desde 1.
-
-```text
-Clave:             3 1 4 2
-Bloque original:   A B C D
-Bloque cifrado:    C A D B
-
-Texto:             ABCDEFGHIJ
-Cifrado:           CADBGEHFIJ
-```
-
-- Usa todos los números del `1` al tamaño del bloque, una sola vez cada uno; mínimo dos números.
-- Acepta espacios o comas: `3 1 4 2` y `3,1,4,2` son equivalentes.
-- Reordena todos los caracteres, incluidos espacios, tildes, emojis y saltos de línea.
-- Si el último bloque está incompleto, omite las posiciones que no existen. Por ejemplo, para `IJ` la clave `3 1 4 2` se reduce a `1 2`, dando `IJ`; para `IJK` se reduce a `3 1 2`, dando `KIJ`.
-- No agrega relleno: al descifrar recuperas el texto exacto, incluidos los espacios finales.
-
-```bash
-python3 permutacion_series.py --cifrar --clave "3 1 4 2" --texto "ABCDEFGHIJ"
-python3 permutacion_series.py --descifrar --clave "3,1,4,2" --texto "CADBGEHFIJ"
-```
-
-## Archivos y ayuda
-
-Ambos programas aceptan los mismos argumentos de entrada y guardan automáticamente el resultado:
-
-```bash
-python3 vigenere.py --cifrar -k LIMON -a mensaje.txt
-python3 vigenere.py --descifrar -k LIMON -a cV1.txt
-
-python3 permutacion_series.py --cifrar -k "3 1 4 2" -a mensaje.txt
-python3 permutacion_series.py --descifrar -k "3 1 4 2" -a cP1.txt
-
+python3 vigenere.py --cifrar -k LEMON -t ATTACKATDAWN
+python3 vigenere.py --descifrar -k LEMON -t LXFOPVEFRNHR
+python3 permutacion_series.py --cifrar -k "3 1 4 2" -t ABCDEFGHIJ
+python3 permutacion_series.py --descifrar -k "3 1 4 2" -t CADBGEHFIJ
 python3 vigenere.py --help
-python3 permutacion_series.py --help
-```
-
-Los ejemplos de archivos suponen que no había resultados antes de ejecutar esos cuatro comandos en orden. Para descifrar, usa el nombre que el programa haya mostrado al cifrar. Usa comillas para nombres con espacios. `--archivo` acepta solo nombres de archivos dentro del proyecto. Los resultados se numeran automáticamente según el programa y la operación (`cV`, `dV`, `cP` o `dP`); ya no se usa `--salida`. Los archivos conservan sus saltos de línea originales y deben tener codificación UTF-8.
-
-También puedes importar las funciones en otro programa:
-
-```python
-import vigenere
-import permutacion_series
-
-texto = "¡Hola, señor!\nPython 123 🙂  "
-cifrado = vigenere.cifrar(texto, "AÑO", espanol=True)
-assert vigenere.descifrar(cifrado, "AÑO", espanol=True) == texto
-
-cifrado = vigenere.cifrar(texto, " Mi clave #2026 🔑 ", ampliado=True)
-assert vigenere.descifrar(cifrado, " Mi clave #2026 🔑 ", ampliado=True) == texto
-
-cifrado = permutacion_series.cifrar(texto, "3 1 4 2")
-assert permutacion_series.descifrar(cifrado, "3 1 4 2") == texto
-```
-
-Para comprobar los ejemplos, la validación de claves y la recuperación exacta de archivos:
-
-```bash
 python3 -m unittest discover -s tests -v
 ```
 
-La suite incluye 44 pruebas, 500 textos Unicode aleatorios en cuatro modos, textos grandes, 12 procesos simultáneos y errores simulados de escritura. Las pruebas usan carpetas temporales y no modifican tus resultados. Consulta [INFORME_PRUEBAS.md](INFORME_PRUEBAS.md) para ver los fallos encontrados, sus correcciones y las limitaciones que siguen presentes.
+En consola, `--archivo` acepta nombres de archivos dentro del proyecto; en la ventana, el selector permite cualquier carpeta. Las pruebas usan carpetas temporales. Las de las ventanas necesitan Tkinter y un escritorio; si faltan, se omiten e indican el motivo. Consulta [INFORME_PRUEBAS.md](INFORME_PRUEBAS.md) para ver la verificación realizada.
 
-Una clave incorrecta o un cifrado truncado no siempre se detectan: estos algoritmos no comprueban la integridad del mensaje. Recuperar texto legible no confirma que la clave y el archivo sean correctos.
+## Organización del código
 
-Estos cifrados clásicos son para prácticas educativas; no protegen datos sensibles.
+- `cifrados/vigenere.py` y `cifrados/permutacion.py`: algoritmos comentados.
+- `cifrados/validacion.py`: alfabeto y validación común.
+- `cifrados/interfaz_vigenere.py` y `cifrados/interfaz_permutacion.py`: instrucciones y configuración de cada interfaz.
+- `cifrados/ventana.py`: formulario gráfico reutilizable.
+- `cifrados/archivos.py`: lectura UTF-8 y guardado sin sobrescribir.
+- `cifrados/interfaz.py`: inicio gráfico y argumentos opcionales.
+
+Los algoritmos reciben únicamente A-Z después del preprocesamiento de entrada. Los cifrados antiguos del modo español o ampliado no forman parte del formato actual. Una clave equivocada o un mensaje recortado pueden dar un resultado de letras sin producir error: no hay comprobación de integridad.

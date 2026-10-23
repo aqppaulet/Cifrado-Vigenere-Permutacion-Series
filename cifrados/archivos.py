@@ -26,6 +26,11 @@ def ruta_archivo(nombre: str, carpeta: Path) -> Path:
 def leer_archivo(nombre: str, carpeta: Path) -> str:
     """Lee un archivo regular como texto UTF-8 sin normalizar saltos de línea."""
     ruta = ruta_archivo(nombre, carpeta)
+    return leer_ruta_archivo(ruta)
+
+
+def leer_ruta_archivo(ruta: Path) -> str:
+    """Lee la ruta elegida expresamente en el selector gráfico de archivos."""
     if not stat.S_ISREG(ruta.stat().st_mode):
         raise ValueError("Elige un archivo de texto; no se admiten carpetas, tuberías ni dispositivos.")
     try:

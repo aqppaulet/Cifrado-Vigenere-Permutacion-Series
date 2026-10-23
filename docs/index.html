@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Vigenère: cifrado y descifrado con preprocesamiento a A-Z, entrada por línea o archivo y procesamiento local.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <title>Vigenère · Taller de cifrado A-Z</title>
+  <link rel="icon" href="assets/icono.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/estilos.css">
+  <script defer src="assets/cifrados.js"></script>
+  <script defer src="assets/app.js"></script>
+</head>
+<body data-algoritmo="vigenere">
+<a class="skip" href="#contenido">Saltar al formulario</a>
+<div class="shell"><aside class="sidebar"><a class="brand" href="index.html"><span class="monogram">AZ</span><span>Taller de cifrado<br><small>SEGURIDAD · PRÁCTICA</small></span></a><nav class="nav" aria-label="Algoritmos y ayuda"><a href="index.html" aria-current="page"><b>01</b>Vigenère</a><a href="permutacion.html"><b>02</b>Permutación</a><a href="limites.html"><b>↗</b>Reglas y ejemplos</a></nav><div class="local-note"><strong>Todo ocurre en tu navegador.</strong>Los mensajes, archivos y claves no se envían a un servidor.</div></aside>
+<main id="contenido">
+  <p class="eyebrow">Laboratorio de cifrado clásico</p>
+  <header class="heading"><div><h1>Vigenère</h1><p class="intro">Cifra y descifra con una clave de letras que se repite. Ingresa una línea o elige un archivo.</p></div><span class="badge">A = 0 · Z = 25</span></header>
+  <section class="rules" aria-label="Preprocesamiento de entrada">
+    <div><strong>Primero preprocesamos. Después ciframos.</strong><p>El algoritmo trabaja con 26 letras: A–Z. Al descifrar se recupera el texto preprocesado.</p></div>
+    <div class="conversions"><code>ñ → N</code><code>áéíóúü → AEIOUU</code><code>a–z → A–Z</code></div>
+  </section>
+  <noscript><p class="noscript">Activa JavaScript para procesar el mensaje. No se envían datos a un servidor.</p></noscript>
+  <div class="workspace">
+    <section class="panel" aria-labelledby="titulo-entrada">
+      <div class="panel-header"><h2 id="titulo-entrada"><span class="step">01</span> Prepara el mensaje</h2><button class="text-button" id="ejemplo" type="button">Cargar ejemplo</button></div>
+      <form id="formulario" novalidate autocomplete="off">
+        <fieldset class="field field-group"><legend class="field-title">¿Qué quieres hacer?</legend><div class="segmented"><label><input type="radio" name="operacion" value="cifrar" checked><span>Cifrar</span></label><label><input type="radio" name="operacion" value="descifrar"><span>Descifrar</span></label></div></fieldset>
+        <div class="field"><label for="clave">Clave de letras</label><input class="entry" id="clave" name="clave" placeholder="Ej. LEMON" aria-describedby="ayuda-clave" autocapitalize="off" spellcheck="false"><p class="hint" id="ayuda-clave">Letras, sin espacios. También preprocesamos la clave: LIMÓN → LIMON.</p></div>
+        <fieldset class="field field-group"><legend class="field-title">Origen del mensaje</legend><div class="segmented"><label><input type="radio" name="fuente" value="linea" checked><span>Una línea</span></label><label><input type="radio" name="fuente" value="archivo"><span>Archivo .txt</span></label></div></fieldset>
+        <div class="field" id="entrada-linea"><label for="texto">Mensaje</label><input class="entry" id="texto" name="texto" placeholder="Escribe letras, ñ o acentos…" aria-describedby="ayuda-texto" spellcheck="false" autocapitalize="off"><p class="hint" id="ayuda-texto">Solo letras. Sin espacios, números, signos ni saltos de línea.</p></div>
+        <div class="field" id="entrada-archivo" hidden><label for="archivo">Archivo del mensaje</label><input class="entry file-entry" id="archivo" type="file" accept=".txt,text/plain" aria-describedby="ayuda-archivo" disabled><p class="hint" id="ayuda-archivo">Texto UTF-8 sin BOM. Solo letras admitidas, sin espacios ni salto de línea final. El archivo original se conserva.</p></div>
+        <div class="actions"><button class="button primary" id="procesar" type="submit" disabled>Cifrar mensaje</button><button class="button secondary" id="limpiar" type="button">Limpiar</button></div>
+        <p class="form-note">La clave y el mensaje completo deben conservarse para descifrar.</p>
+      </form>
+    </section>
+    <section class="panel" aria-labelledby="titulo-salida">
+      <div class="panel-header"><h2 id="titulo-salida"><span class="step">02</span> Revisa el resultado</h2><span class="badge">A–Z</span></div>
+      <p class="pre-title">Texto preprocesado · entrada real al algoritmo</p><pre class="preprocessed" id="preprocesado">El texto que recibirá el algoritmo aparecerá aquí.</pre>
+      <div class="result-title"><label for="resultado" id="titulo-resultado">Texto cifrado</label><span class="count" id="cantidad">0 letras</span></div>
+      <textarea class="output" id="resultado" readonly spellcheck="false" placeholder="Tu resultado aparecerá aquí." aria-describedby="estado"></textarea>
+      <div class="output-actions"><button class="button secondary" id="copiar" type="button" disabled>Copiar resultado</button><button class="button secondary" id="descargar" type="button" disabled>Descargar .txt ↓</button></div>
+      <p class="status" id="estado" role="status" aria-live="polite" aria-atomic="true">Introduce tu clave y el mensaje para comenzar.</p>
+      <details class="details"><summary>Cómo funciona este algoritmo</summary><p>A=0, B=1, …, Z=25. Al cifrar se suma la clave; al descifrar se resta, siempre módulo 26. La clave vuelve a su primera letra con cada mensaje. <code>ATTACKATDAWN</code> con <code>LEMON</code> produce <code>LXFOPVEFRNHR</code>.</p></details>
+    </section>
+  </div>
+  <footer class="footer"><span>Práctica educativa · Sin instalaciones ni dependencias externas.</span><a href="limites.html">Reglas para la profesora y el equipo de descifrado ↗</a></footer>
+</main></div>
+</body></html>

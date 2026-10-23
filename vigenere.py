@@ -1,24 +1,8 @@
-"""Programa de consola para Vigenère."""
+"""Punto de entrada de consola y funciones públicas de Vigenère A-Z."""
 
-from cifrados.vigenere import (
-    ALFABETO,
-    ALFABETO_ESPANOL,
-    cifrar,
-    descifrar,
-    validar_clave,
-)
-from cifrados.interfaz import ejecutar
+from cifrados.interfaz_vigenere import main
+from cifrados.vigenere import ALFABETO, cifrar, descifrar, validar_clave
 
 
 if __name__ == "__main__":
-    ejecutar(
-        nombre="Vigenère",
-        prefijo_cifrado="cV",
-        prefijo_descifrado="dV",
-        descripcion="Cifra letras en modo clásico o todos los caracteres en modo ampliado (UTF-8 y Base64).",
-        ayuda_clave="Una palabra sin espacios ni tildes, por ejemplo LIMON.",
-        cifrar=cifrar,
-        descifrar=descifrar,
-        validar_clave=validar_clave,
-        admite_espanol=True,
-    )
+    main()

@@ -2,20 +2,27 @@
 
 import re
 
+from .validacion import normalizar_letras
+
 
 def validar_clave(clave: str) -> list[int]:
     """Valida posiciones separadas por espacios o comas, numeradas desde 1."""
-    clave = clave.strip()
+    if not isinstance(clave, str):
+        raise ValueError("La clave debe escribirse con posiciones, por ejemplo: 3 1 4 2.")
+    clave = clave.strip(" ")
     # Primero comprobamos que solo se hayan usado números y separadores válidos.
-    formato_correcto = re.fullmatch(r"[0-9]+(?:[\s,]+[0-9]+)*", clave)
+    formato_correcto = re.fullmatch(r"[0-9]+(?:(?: +| *, *)[0-9]+)*", clave)
     if formato_correcto is None:
         raise ValueError("Usa posiciones separadas por espacios o comas, por ejemplo: 3 1 4 2.")
 
-    numeros = re.split(r"[\s,]+", clave)
+    numeros = re.split(r"[ ,]+", clave)
     posiciones = []
     for numero in numeros:
         # La clave usa posiciones desde 1, como se suele explicar en papel.
-        posiciones.append(int(numero))
+        try:
+            posiciones.append(int(numero))
+        except ValueError as error:
+            raise ValueError("Una posición de la clave es demasiado larga.") from error
 
     # Para ser una permutación válida deben aparecer exactamente 1, 2, ..., N.
     posiciones_ordenadas = sorted(posiciones)
@@ -34,6 +41,7 @@ def validar_clave(clave: str) -> list[int]:
 def _transformar(texto: str, clave: str, inversa: bool) -> str:
     """Procesa el texto en bloques y aplica la permutación solicitada."""
     posiciones = validar_clave(clave)
+    texto = normalizar_letras(texto)
     tamano_bloque = len(posiciones)
     resultado = []
 
@@ -70,10 +78,10 @@ def _transformar(texto: str, clave: str, inversa: bool) -> str:
 
 
 def cifrar(texto: str, clave: str) -> str:
-    """Reordena todos los caracteres en bloques."""
+    """Reordena letras A-Z por bloques, sin añadir relleno."""
     return _transformar(texto, clave, inversa=False)
 
 
 def descifrar(texto: str, clave: str) -> str:
-    """Reconstruye el orden original de los caracteres."""
+    """Reconstruye el orden de las letras y devuelve el texto en mayúsculas."""
     return _transformar(texto, clave, inversa=True)
