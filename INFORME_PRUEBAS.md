@@ -4,9 +4,10 @@
 
 ## Aplicación web
 
-**24 pruebas web pasan en Firefox real**, además de las 49 pruebas Python indicadas arriba. Se usa un perfil temporal y un servidor limitado a localhost; la aplicación se sirve bajo una subruta de proyecto para comprobar las rutas de GitHub Pages.
+**26 pruebas web pasan en Firefox real**, además de las 49 pruebas Python indicadas arriba. Se usa un perfil temporal y un servidor limitado a localhost; la aplicación se sirve bajo una subruta de proyecto para comprobar las rutas de GitHub Pages.
 
 - Solo el cifrado de permutación elimina dígitos 0-9 durante el pretratamiento desde línea o archivo, antes de formar bloques. Se comprueba que Vigenère y el descifrado sigan rechazando números y que una entrada sin letras se rechace.
+- Regresión exacta del caso `jos1223`: pretratamiento `JOS` y cifrado `SJO` con clave `3 1 4 2`. Los dos scripts de permutación usan una versión derivada de su SHA-256; las pruebas comprueban que esa versión coincide con el contenido servido para evitar reutilizar validaciones anteriores en caché.
 - Ambos cifrados eliminan espacios iniciales, finales, internos y repetidos desde línea o archivo. El descifrado sigue rechazando espacios; las claves y el rechazo de tabulaciones/saltos no cambian.
 - Vectores conocidos y **200 mensajes aleatorios comparados con Python**: cifrado, descifrado y preprocesamiento idénticos, incluidas Ñ, tildes y diéresis en ambas capitalizaciones.
 - Validación de mensajes y claves; rechazo de espacios al descifrar y en la clave de Vigenère, saltos, símbolos, Unicode no admitido, BOM y UTF-8 defectuoso.

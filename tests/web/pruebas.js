@@ -192,6 +192,18 @@
         radio(win, "fuente", "linea");
         escribir(win, "texto", texto);
       });
+      if (pagina === "permutacion.html") {
+        await test("Regresión jos1223: pretratamiento JOS y cifrado SJO", async () => {
+          radio(win, "operacion", "cifrar");
+          radio(win, "fuente", "linea");
+          escribir(win, "clave", "3 1 4 2");
+          escribir(win, "texto", "jos1223");
+          igual(d.getElementById("preprocesado").textContent, "JOS");
+          await procesar(win);
+          igual(d.getElementById("resultado").value, "SJO");
+          assert(d.getElementById("ayuda-texto").textContent.includes("dígitos 0-9"));
+        });
+      }
       await test(`${pagina}: disposición sin desbordamiento en móvil y escritorio`, async () => {
         for (const ancho of [360, 390, 768, 1366]) {
           marco.width = ancho;
@@ -214,6 +226,18 @@
         }
       });
     }
+    await test("JavaScript de permutación versionado según su contenido para evitar caché anterior", async () => {
+      const scripts = Array.from(marco.contentDocument.scripts);
+      igual(scripts.length, 2);
+      for (const script of scripts) {
+        const url = new URL(script.src);
+        const respuesta = await fetch(url);
+        igual(respuesta.status, 200);
+        const digest = await crypto.subtle.digest("SHA-256", await respuesta.arrayBuffer());
+        const hash = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");
+        igual(url.searchParams.get("v"), hash.slice(0, 12));
+      }
+    });
     await test("Navegación, límites y recursos bajo una subruta de proyecto", async () => {
       const respuesta = await fetch("../../docs/limites.html");
       igual(respuesta.status, 200);
