@@ -18,7 +18,7 @@
   <p class="eyebrow">Laboratorio de cifrado clásico</p>
   <header class="heading"><div><h1>Permutación de series</h1><p class="intro">Reordena letras por bloques según una clave de posiciones. El último bloque se procesa sin relleno.</p></div><span class="badge">TRANSPOSICIÓN POR BLOQUES</span></header>
   <section class="rules" aria-label="Preprocesamiento de entrada">
-    <div><strong>Primero preprocesamos. Después ciframos.</strong><p>El algoritmo trabaja con 26 letras: A–Z. Al descifrar se recupera el texto preprocesado.</p></div>
+    <div><strong>Primero preprocesamos. Después ciframos.</strong><p>Antes de cifrar se eliminan espacios y dígitos 0–9. El algoritmo recibe solo letras A–Z.</p></div>
     <div class="conversions"><code>ñ → N</code><code>áéíóúü → AEIOUU</code><code>a–z → A–Z</code></div>
   </section>
   <noscript><p class="noscript">Activa JavaScript para procesar el mensaje. No se envían datos a un servidor.</p></noscript>
@@ -29,8 +29,8 @@
         <fieldset class="field field-group"><legend class="field-title">¿Qué quieres hacer?</legend><div class="segmented"><label><input type="radio" name="operacion" value="cifrar" checked><span>Cifrar</span></label><label><input type="radio" name="operacion" value="descifrar"><span>Descifrar</span></label></div></fieldset>
         <div class="field"><label for="clave">Clave de posiciones</label><input class="entry" id="clave" name="clave" placeholder="Ej. 3 1 4 2" aria-describedby="ayuda-clave" autocapitalize="off" spellcheck="false"><p class="hint" id="ayuda-clave">Posiciones del 1 al N, sin repetir; mínimo 2. Acepta espacios o comas: 3,1,4,2.</p></div>
         <fieldset class="field field-group"><legend class="field-title">Origen del mensaje</legend><div class="segmented"><label><input type="radio" name="fuente" value="linea" checked><span>Una línea</span></label><label><input type="radio" name="fuente" value="archivo"><span>Archivo .txt</span></label></div></fieldset>
-        <div class="field" id="entrada-linea"><label for="texto">Mensaje</label><input class="entry" id="texto" name="texto" placeholder="Escribe letras, ñ o acentos…" aria-describedby="ayuda-texto" spellcheck="false" autocapitalize="off"><p class="hint" id="ayuda-texto">Letras y espacios. Los espacios se eliminan al cifrar. Sin números, signos ni saltos de línea.</p></div>
-        <div class="field" id="entrada-archivo" hidden><label for="archivo">Archivo del mensaje</label><input class="entry file-entry" id="archivo" type="file" accept=".txt,text/plain" aria-describedby="ayuda-archivo" disabled><p class="hint" id="ayuda-archivo">Texto UTF-8 sin BOM. Los espacios se eliminan al cifrar; sin salto de línea final. El archivo original se conserva.</p></div>
+        <div class="field" id="entrada-linea"><label for="texto">Mensaje</label><input class="entry" id="texto" name="texto" placeholder="Escribe letras, ñ o acentos…" aria-describedby="ayuda-texto" spellcheck="false" autocapitalize="off"><p class="hint" id="ayuda-texto">El pretratamiento elimina espacios y dígitos 0-9. Sin signos ni saltos de línea.</p></div>
+        <div class="field" id="entrada-archivo" hidden><label for="archivo">Archivo del mensaje</label><input class="entry file-entry" id="archivo" type="file" accept=".txt,text/plain" aria-describedby="ayuda-archivo" disabled><p class="hint" id="ayuda-archivo">Texto UTF-8 sin BOM. Se eliminan espacios y dígitos 0-9 antes de cifrar; sin salto final.</p></div>
         <div class="actions"><button class="button primary" id="procesar" type="submit" disabled>Cifrar mensaje</button><button class="button secondary" id="limpiar" type="button">Limpiar</button></div>
         <p class="form-note">La clave y el mensaje completo deben conservarse para descifrar.</p>
       </form>

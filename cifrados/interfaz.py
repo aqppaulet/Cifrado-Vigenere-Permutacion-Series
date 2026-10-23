@@ -2,7 +2,7 @@
 
 import argparse
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Optional
 
 from .archivos import guardar_resultado, leer_archivo, ruta_archivo
 from .validacion import REGLAS_TEXTO
@@ -47,10 +47,12 @@ def ejecutar(
     cifrar: Callable,
     descifrar: Callable,
     validar_clave: Callable,
+    preparar_texto: Optional[Callable] = None,
+    reglas_texto: str = REGLAS_TEXTO,
 ) -> None:
     """Abre la ventana sin argumentos; con argumentos procesa una entrada."""
     parser = argparse.ArgumentParser(
-        description=f"{nombre}: {descripcion} {REGLAS_TEXTO}",
+        description=f"{nombre}: {descripcion} {reglas_texto}",
         epilog=(f"{ejemplo} Cifrados: {prefijo_cifrado}1.txt, {prefijo_cifrado}2.txt, etc. "
                 f"Descifrados: {prefijo_descifrado}1.txt, {prefijo_descifrado}2.txt, etc. "
                 "Se guardan en el proyecto, sin sobrescribir. Para descifrar, usa la misma clave."),
@@ -93,4 +95,6 @@ def ejecutar(
         ejemplo=ejemplo, prefijo_cifrado=prefijo_cifrado,
         prefijo_descifrado=prefijo_descifrado, cifrar=cifrar, descifrar=descifrar,
         validar_clave=validar_clave,
+        preparar_texto=preparar_texto,
+        reglas_texto=reglas_texto,
     )

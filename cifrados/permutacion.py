@@ -5,6 +5,13 @@ import re
 from .validacion import normalizar_letras
 
 
+def preparar_texto(texto: str, descifrar: bool = False) -> str:
+    """Solo al cifrar, elimina los dígitos 0-9 antes de preparar las letras."""
+    if not descifrar and isinstance(texto, str):
+        texto = re.sub(r"[0-9]", "", texto)
+    return normalizar_letras(texto, eliminar_espacios=not descifrar)
+
+
 def validar_clave(clave: str) -> list[int]:
     """Valida posiciones separadas por espacios o comas, numeradas desde 1."""
     if not isinstance(clave, str):
@@ -41,7 +48,7 @@ def validar_clave(clave: str) -> list[int]:
 def _transformar(texto: str, clave: str, inversa: bool) -> str:
     """Procesa el texto en bloques y aplica la permutación solicitada."""
     posiciones = validar_clave(clave)
-    texto = normalizar_letras(texto, eliminar_espacios=not inversa)
+    texto = preparar_texto(texto, descifrar=inversa)
     tamano_bloque = len(posiciones)
     resultado = []
 

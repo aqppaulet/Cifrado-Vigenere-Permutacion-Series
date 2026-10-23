@@ -71,6 +71,21 @@ class PruebasTexto(unittest.TestCase):
 
 
 class PruebasPermutacion(unittest.TestCase):
+    def test_pretratamiento_elimina_digitos_solo_al_cifrar_permutacion(self):
+        from cifrados.permutacion import preparar_texto
+
+        texto = " A0B1C2D3 E4F5G6H7 I8J9K "
+        self.assertEqual(preparar_texto(texto), "ABCDEFGHIJK")
+        cifrado = permutacion_series.cifrar(texto, "3 1 4 2")
+        self.assertEqual(cifrado, "CADBGEHFKIJ")
+        self.assertEqual(permutacion_series.descifrar(cifrado, "3 1 4 2"), "ABCDEFGHIJK")
+        for texto_invalido in ("0123456789", " 123 ", "A\t1B", "A!1B", "A١B"):
+            with self.subTest(texto=texto_invalido), self.assertRaises(ValueError):
+                permutacion_series.cifrar(texto_invalido, "2 1")
+        for funcion, clave in ((permutacion_series.descifrar, "3 1 4 2"), (vigenere.cifrar, "LEMON"), (vigenere.descifrar, "LEMON")):
+            with self.subTest(funcion=funcion), self.assertRaises(ValueError):
+                funcion("AB12CD", clave)
+
     def test_vector_conocido_y_bloques_incompletos(self):
         for texto, esperado in (("ABCDEFGHIJ", "CADBGEHFIJ"), ("ABCDEFGHIJK", "CADBGEHFKIJ"), ("AB", "AB"), ("ABC", "CAB"), ("A", "A")):
             with self.subTest(texto=texto):

@@ -16,7 +16,7 @@ class AplicacionCifrado:
     def __init__(
         self, raiz, *, nombre, descripcion, ayuda_clave, ejemplo,
         prefijo_cifrado, prefijo_descifrado, cifrar, descifrar, validar_clave,
-        carpeta=CARPETA_PROYECTO,
+        carpeta=CARPETA_PROYECTO, preparar_texto=None, reglas_texto=REGLAS_TEXTO,
     ):
         # Importar Tk aquí permite probar los algoritmos en equipos sin escritorio.
         import tkinter as tk
@@ -27,6 +27,7 @@ class AplicacionCifrado:
         self.cifrar = cifrar
         self.descifrar = descifrar
         self.validar_clave = validar_clave
+        self.preparar_texto = preparar_texto
         self.prefijos = {"cifrar": prefijo_cifrado, "descifrar": prefijo_descifrado}
         self.resultado = ""
         self._ajustando = False
@@ -59,7 +60,7 @@ class AplicacionCifrado:
 
         reglas = ttk.LabelFrame(cuerpo, text="Alfabeto inglés de trabajo: A-Z (26 letras)", padding=6)
         reglas.grid(row=1, column=0, sticky="ew", pady=(0, 4))
-        ttk.Label(reglas, text=REGLAS_TEXTO, wraplength=680).pack(anchor="w", pady=4)
+        ttk.Label(reglas, text=reglas_texto, wraplength=680).pack(anchor="w", pady=4)
         ttk.Label(reglas, text=ejemplo, wraplength=680).pack(anchor="w")
 
         operacion = ttk.Frame(cuerpo)
@@ -215,7 +216,10 @@ class AplicacionCifrado:
                 texto = leer_ruta_archivo(Path(self.archivo.get()))
             else:
                 texto = self.texto.get()
-            normalizado = normalizar_letras(texto, eliminar_espacios=self.operacion.get() == "cifrar")
+            if self.preparar_texto is not None:
+                normalizado = self.preparar_texto(texto, descifrar=self.operacion.get() == "descifrar")
+            else:
+                normalizado = normalizar_letras(texto, eliminar_espacios=self.operacion.get() == "cifrar")
             self.preprocesado.set(normalizado)
             funcion = self.cifrar if self.operacion.get() == "cifrar" else self.descifrar
             resultado = funcion(normalizado, self.clave.get())

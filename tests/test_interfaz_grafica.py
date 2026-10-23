@@ -112,6 +112,26 @@ class PruebasVentana(unittest.TestCase):
         self.assertEqual(app.resultado, "NINOAEIOUU")
         self.error.assert_not_called()
 
+    def test_permutacion_elimina_numeros_en_linea_y_archivo(self):
+        app = self.crear(interfaz_permutacion)
+        app.clave.set("3 1 4 2")
+        app.texto.set("A0B1C2D3 E4F5G6H7 I8J9K")
+        self.procesar()
+        self.assertEqual(app.preprocesado.get(), "ABCDEFGHIJK")
+        self.assertEqual(app.resultado, "CADBGEHFKIJ")
+        ruta = self.carpeta / "mensaje.txt"
+        ruta.write_text("ABCD 123 EFGH 456 IJK", encoding="utf-8")
+        app.fuente.set("archivo")
+        app.archivo.set(str(ruta))
+        self.procesar()
+        self.assertEqual(app.preprocesado.get(), "ABCDEFGHIJK")
+        self.assertEqual(app.resultado, "CADBGEHFKIJ")
+        self.error.assert_not_called()
+        app.operacion.set("descifrar")
+        self.procesar()
+        self.error.assert_called_once()
+        self.assertEqual(app.resultado, "")
+
     def test_selector_acepta_archivo_fuera_de_la_carpeta_del_programa(self):
         app = self.crear()
         with tempfile.TemporaryDirectory() as otra:

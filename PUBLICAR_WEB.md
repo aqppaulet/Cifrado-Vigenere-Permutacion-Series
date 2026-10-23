@@ -44,7 +44,7 @@ Ejecuta `python3 preparar_paquete.py` y comparte `Cifrados_Web.zip`. El destinat
 
 Se aplican las mismas reglas que en Python: minúsculas a mayúsculas, Ñ a N, y áéíóúü a AEIOUU, incluidas sus versiones mayúsculas y formas con acentos combinados. Los algoritmos reciben solo A-Z. El descifrado no restaura la escritura original.
 
-Solo al cifrar se aceptan y eliminan los espacios del mensaje. El descifrado y las claves conservan sus reglas anteriores. Se rechazan saltos de línea, números, símbolos, mensajes vacíos o formados solo por espacios y archivos con BOM. La clave de Vigenère usa el mismo preprocesamiento; la clave de permutación sigue siendo numérica. Los archivos se leen completos en memoria.
+Solo al cifrar se aceptan y eliminan los espacios del mensaje. El descifrado y las claves conservan sus reglas anteriores. Solo al cifrar permutación se eliminan también los dígitos 0-9 del mensaje; la clave numérica se conserva. Se rechazan saltos de línea, números en las demás operaciones, símbolos, mensajes vacíos o formados solo por espacios y archivos con BOM. La clave de Vigenère usa el mismo preprocesamiento; la clave de permutación sigue siendo numérica. Los archivos se leen completos en memoria.
 
 Todos los recursos están dentro de `docs/`, con rutas relativas para funcionar bajo la subruta del repositorio. No se usan fuentes externas, analítica ni llamadas a servidores desde la aplicación. El acuerdo completo también está disponible en la propia web.
 

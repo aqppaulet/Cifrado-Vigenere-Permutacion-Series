@@ -1,11 +1,12 @@
 # Informe de pruebas — 23 de octubre de 2026
 
-**47 pruebas pasan, sin omisiones**, en Python 3.13.5. Incluyen trece pruebas de las ventanas con widgets reales de Tkinter en una pantalla virtual Xvfb. La ejecución completa terminó en aproximadamente 4,2 segundos en este equipo.
+**49 pruebas pasan, sin omisiones**, en Python 3.13.5. Incluyen catorce pruebas de las ventanas con widgets reales de Tkinter en una pantalla virtual Xvfb. La ejecución completa terminó en aproximadamente 4,2 segundos en este equipo.
 
 ## Aplicación web
 
-**22 pruebas web pasan en Firefox real**, además de las 47 pruebas Python indicadas arriba. Se usa un perfil temporal y un servidor limitado a localhost; la aplicación se sirve bajo una subruta de proyecto para comprobar las rutas de GitHub Pages.
+**24 pruebas web pasan en Firefox real**, además de las 49 pruebas Python indicadas arriba. Se usa un perfil temporal y un servidor limitado a localhost; la aplicación se sirve bajo una subruta de proyecto para comprobar las rutas de GitHub Pages.
 
+- Solo el cifrado de permutación elimina dígitos 0-9 durante el pretratamiento desde línea o archivo, antes de formar bloques. Se comprueba que Vigenère y el descifrado sigan rechazando números y que una entrada sin letras se rechace.
 - Ambos cifrados eliminan espacios iniciales, finales, internos y repetidos desde línea o archivo. El descifrado sigue rechazando espacios; las claves y el rechazo de tabulaciones/saltos no cambian.
 - Vectores conocidos y **200 mensajes aleatorios comparados con Python**: cifrado, descifrado y preprocesamiento idénticos, incluidas Ñ, tildes y diéresis en ambas capitalizaciones.
 - Validación de mensajes y claves; rechazo de espacios al descifrar y en la clave de Vigenère, saltos, símbolos, Unicode no admitido, BOM y UTF-8 defectuoso.
@@ -53,7 +54,7 @@ En Linux con Tkinter y Xvfb instalados, para probar sin mostrar ventanas:
 xvfb-run -a python3 -m unittest discover -s tests -v
 ```
 
-Si falta Tkinter o no hay escritorio, las trece pruebas gráficas se omiten explícitamente. El resto sigue comprobando algoritmos, archivos, argumentos e inicio de las interfaces.
+Si falta Tkinter o no hay escritorio, las catorce pruebas gráficas se omiten explícitamente. El resto sigue comprobando algoritmos, archivos, argumentos e inicio de las interfaces.
 
 En esta verificación, Tkinter y Xvfb se descargaron y extrajeron en `/tmp` para ejecutar todas las pruebas. No se instalaron paquetes del sistema, porque sudo requería una contraseña de administrador. El ZIP compartible no incluye estas herramientas temporales.
 

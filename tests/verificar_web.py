@@ -30,6 +30,7 @@ def fixtures():
         ("vigenere", " Niño Ágil ", "LIMÓN"),
         ("permutacion", "ABCDEFGHIJK", "3 1 4 2"),
         ("permutacion", " ABCD EFGH IJK ", "3 1 4 2"),
+        ("permutacion", " A0B1C2D3 E4F5G6H7 I8J9K ", "3 1 4 2"),
     ]
     letras = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzáéíóúüñÁÉÍÓÚÜÑ"
     for _ in range(100):
@@ -38,9 +39,10 @@ def fixtures():
         casos.append(("vigenere", texto, clave))
         posiciones = list(range(1, azar.randrange(3, 22)))
         azar.shuffle(posiciones)
-        casos.append(("permutacion", texto, ", ".join(map(str, posiciones))))
+        casos.append(("permutacion", texto + "0123456789", ", ".join(map(str, posiciones))))
     return [dict(algoritmo=nombre, texto=texto, clave=clave,
-                 normalizado=normalizar_letras(texto, eliminar_espacios=True),
+                 normalizado=(permutacion.preparar_texto(texto) if nombre == "permutacion"
+                              else normalizar_letras(texto, eliminar_espacios=True)),
                  cifrado=(vigenere if nombre == "vigenere" else permutacion).cifrar(texto, clave))
             for nombre, texto, clave in casos]
 

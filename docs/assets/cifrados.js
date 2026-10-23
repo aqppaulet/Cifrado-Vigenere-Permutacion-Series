@@ -59,9 +59,15 @@
     return salida;
   }
 
+  function prepararPermutacion(texto, descifrar = false) {
+    // Esta eliminación corresponde solo al texto claro de permutación, nunca a su clave.
+    if (!descifrar && typeof texto === "string") texto = texto.replace(/[0-9]/g, "");
+    return normalizar(texto, "El texto", !descifrar);
+  }
+
   function permutacion(texto, clave, descifrar = false) {
     const posiciones = validarPermutacion(clave);
-    const mensaje = normalizar(texto, "El texto", !descifrar);
+    const mensaje = prepararPermutacion(texto, descifrar);
     const salida = [];
     for (let inicio = 0; inicio < mensaje.length; inicio += posiciones.length) {
       const bloque = mensaje.slice(inicio, inicio + posiciones.length);
@@ -78,5 +84,5 @@
     return salida.join("");
   }
 
-  global.Cifrados = Object.freeze({ ALFABETO, normalizar, validarPermutacion, vigenere, permutacion });
+  global.Cifrados = Object.freeze({ ALFABETO, normalizar, validarPermutacion, prepararPermutacion, vigenere, permutacion });
 })(globalThis);

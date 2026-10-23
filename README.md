@@ -7,7 +7,7 @@ La versión web está en **`docs/`** y funciona en el navegador sin instalar Pyt
 - [Reglas para la profesora y el equipo de descifrado](docs/limites.html).
 - [Cómo publicarla en GitHub Pages](PUBLICAR_WEB.md).
 
-El preprocesamiento convierte `NiñoÁgil` en `NINOAGIL` y la clave `LIMÓN` en `LIMON`. El algoritmo recibe solo letras A-Z. El descifrado recupera el texto preprocesado; no restaura Ñ, tildes ni la capitalización original. Solo al cifrar se aceptan y eliminan espacios del mensaje: `Hola Mundo` se usa como `HOLAMUNDO`. El descifrado y las claves conservan sus reglas. Se siguen rechazando números, símbolos y saltos de línea.
+El preprocesamiento convierte `NiñoÁgil` en `NINOAGIL` y la clave `LIMÓN` en `LIMON`. El algoritmo recibe solo letras A-Z. El descifrado recupera el texto preprocesado; no restaura Ñ, tildes ni la capitalización original. Solo al cifrar se aceptan y eliminan espacios del mensaje: `Hola Mundo` se usa como `HOLAMUNDO`. El descifrado y las claves conservan sus reglas. En permutación, el pretratamiento también elimina los dígitos 0-9 solo al cifrar; Vigenère sigue rechazándolos. Los símbolos y saltos de línea siguen sin admitirse.
 
 Abre `docs/index.html` directamente, o ejecuta desde esta carpeta:
 
@@ -61,6 +61,7 @@ Los errores indican qué corregir; los datos del formulario se conservan. **Limp
 | Texto claro y texto cifrado | Una o más letras. Antes del algoritmo se normalizan a `ABCDEFGHIJKLMNOPQRSTUVWXYZ`. |
 | Preprocesamiento | Minúsculas a mayúsculas; `ñ/Ñ` a `N`; `áéíóúü` y sus mayúsculas a `AEIOUU`. También acepta estas letras con acentos Unicode combinados. |
 | Espacios en los mensajes | Solo al cifrar se aceptan y eliminan. Al descifrar se rechazan. |
+| Dígitos 0-9 en permutación | Solo al cifrar se eliminan del mensaje durante el pretratamiento, antes de formar bloques. No se eliminan de la clave. Vigenère y el descifrado siguen rechazándolos en el mensaje. |
 | Caracteres rechazados en los mensajes | Saltos de línea, tabulaciones, números, símbolos, emojis y letras fuera de A-Z/a-z y las letras españolas indicadas. |
 | Mensaje vacío | Se rechaza. |
 | Clave de Vigenère | Una o más letras; aplica el mismo preprocesamiento que el mensaje. Ejemplo: `LIMÓN` se usa como `LIMON`. Sin espacios, números ni símbolos. |

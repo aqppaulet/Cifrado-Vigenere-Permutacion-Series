@@ -22,6 +22,9 @@
 
   const operacion = () => form.elements.operacion.value;
   const fuente = () => form.elements.fuente.value;
+  const prepararEntrada = (entrada, descifrar) => esVigenere
+    ? Cifrados.normalizar(entrada, "El texto", !descifrar)
+    : Cifrados.prepararPermutacion(entrada, descifrar);
 
   function avisar(mensaje, error = false) {
     estado.textContent = mensaje;
@@ -46,13 +49,17 @@
     $("ayuda-archivo").textContent = esCifrado
       ? "Texto UTF-8 sin BOM. Los espacios se eliminan al cifrar; sin salto de línea final. El archivo original se conserva."
       : "Texto UTF-8 sin BOM. Solo letras admitidas, sin espacios ni salto de línea final. El archivo original se conserva.";
+    if (esCifrado && !esVigenere) {
+      $("ayuda-texto").textContent = "El pretratamiento elimina espacios y dígitos 0-9. Sin signos ni saltos de línea.";
+      $("ayuda-archivo").textContent = "Texto UTF-8 sin BOM. Se eliminan espacios y dígitos 0-9 antes de cifrar; sin salto final.";
+    }
     $("entrada-linea").hidden = esArchivo;
     $("entrada-archivo").hidden = !esArchivo;
     texto.disabled = esArchivo;
     archivo.disabled = !esArchivo;
     avisar("Introduce tu clave y el mensaje para comenzar.");
     if (!esArchivo && texto.value) {
-      try { previo.textContent = Cifrados.normalizar(texto.value, "El texto", esCifrado); }
+      try { previo.textContent = prepararEntrada(texto.value, !esCifrado); }
       catch (error) { previo.textContent = error.message; }
     }
   }
@@ -86,7 +93,7 @@
       else Cifrados.validarPermutacion(llave);
       const entrada = await leerEntrada();
       if (actual !== revision) return;
-      const preparado = Cifrados.normalizar(entrada, "El texto", op === "cifrar");
+      const preparado = prepararEntrada(entrada, op === "descifrar");
       const transformar = esVigenere ? Cifrados.vigenere : Cifrados.permutacion;
       resultado = transformar(preparado, llave, op === "descifrar");
       revisionResultado = actual;

@@ -48,7 +48,8 @@
     await test("Vectores y 200 casos comparados con Python", () => {
       for (const caso of fixtures) {
         const funcion = Cifrados[caso.algoritmo];
-        igual(Cifrados.normalizar(caso.texto, "El texto", true), caso.normalizado);
+        igual(caso.algoritmo === "permutacion" ? Cifrados.prepararPermutacion(caso.texto)
+          : Cifrados.normalizar(caso.texto, "El texto", true), caso.normalizado);
         igual(funcion(caso.texto, caso.clave), caso.cifrado);
         igual(funcion(caso.cifrado, caso.clave, true), caso.normalizado);
       }
@@ -160,6 +161,36 @@
           igual(d.getElementById("estado").dataset.tipo, "error");
           escribir(win, "clave", clave);
         }
+      });
+      await test(`${pagina}: pretratamiento de números exclusivo de permutación al cifrar`, async () => {
+        radio(win, "operacion", "cifrar");
+        radio(win, "fuente", "linea");
+        escribir(win, "clave", clave);
+        escribir(win, "texto", `01 ${texto} 23456789`);
+        await procesar(win);
+        if (pagina === "permutacion.html") {
+          igual(d.getElementById("preprocesado").textContent, preparado);
+          igual(d.getElementById("resultado").value, esperado);
+        } else {
+          igual(d.getElementById("resultado").value, "");
+          igual(d.getElementById("estado").dataset.tipo, "error");
+        }
+        radio(win, "fuente", "archivo");
+        fichero(win, `01 ${texto} 23456789`);
+        await procesar(win);
+        if (pagina === "permutacion.html") igual(d.getElementById("resultado").value, esperado);
+        else igual(d.getElementById("estado").dataset.tipo, "error");
+        radio(win, "operacion", "descifrar");
+        fichero(win, `${esperado}1`);
+        await procesar(win);
+        igual(d.getElementById("estado").dataset.tipo, "error");
+        igual(d.getElementById("resultado").value, "");
+        radio(win, "operacion", "cifrar");
+        fichero(win, " 0123456789 ");
+        await procesar(win);
+        igual(d.getElementById("estado").dataset.tipo, "error");
+        radio(win, "fuente", "linea");
+        escribir(win, "texto", texto);
       });
       await test(`${pagina}: disposición sin desbordamiento en móvil y escritorio`, async () => {
         for (const ancho of [360, 390, 768, 1366]) {

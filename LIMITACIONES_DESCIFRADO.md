@@ -12,7 +12,7 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ
 
 Texto claro y cifrado deben tener **al menos una letra**. Antes de entrar al algoritmo se preprocesan: minúsculas a mayúsculas, `ñ/Ñ` a `N`, y `áéíóúü/ÁÉÍÓÚÜ` a `AEIOUU`. Se aceptan las formas Unicode compuestas y con acentos combinados. La salida siempre cumple `[A-Z]+`. Por ejemplo, `NiñoÁgil` se convierte en `NINOAGIL`. El descifrado recupera el mensaje preprocesado; no restaura tildes, Ñ ni la capitalización original.
 
-Solo al cifrar se aceptan y eliminan los espacios comunes del mensaje, incluidos los iniciales, finales y repetidos: `Hola Mundo` se procesa como `HOLAMUNDO`. Al descifrar, el texto cifrado sigue sin admitir espacios. Las claves conservan sus reglas anteriores. Se rechazan tabulaciones, saltos de línea, números, signos, emojis y letras distintas de las inglesas y las españolas indicadas. Un mensaje formado solo por espacios se rechaza porque no queda ninguna letra.
+Solo al cifrar se aceptan y eliminan los espacios comunes del mensaje, incluidos los iniciales, finales y repetidos: `Hola Mundo` se procesa como `HOLAMUNDO`. Al descifrar, el texto cifrado sigue sin admitir espacios. Las claves conservan sus reglas anteriores. Con la excepción de los dígitos 0-9 al cifrar permutación (sección 3), se rechazan tabulaciones, saltos de línea, números, signos, emojis y letras distintas de las inglesas y las españolas indicadas. Un mensaje formado solo por espacios se rechaza porque no queda ninguna letra.
 
 No se admiten textos vacíos. No se exige una longitud múltiplo del tamaño de clave. No hay una longitud máxima fija programada; los archivos y resultados completos deben caber en memoria.
 
@@ -36,6 +36,8 @@ Texto cifrado:  LXFOPVEFRNHR
 ```
 
 ## 3. Permutación de series (transposición por bloques)
+
+Solo en el cifrado de permutación, el pretratamiento elimina los dígitos ASCII `0-9` del mensaje, además de los espacios, antes de formar bloques. Por ejemplo, `HOLA123 MUNDO` se convierte en `HOLAMUNDO`. No se eliminan los números de la clave. El descifrado de permutación y Vigenère conservan sus reglas. Si solo quedan números y espacios, se rechaza el mensaje por no contener letras.
 
 La clave es numérica porque indica posiciones: debe contener todos los enteros del `1` al `N`, una sola vez cada uno, con mínimo dos posiciones. Se escriben con dígitos ASCII y se separan por espacios o comas. `3 1 4 2`, `3,1,4,2` y `3, 1, 4, 2` son equivalentes. Se permiten espacios exteriores en esta clave; no saltos de línea ni tabulaciones. Se rechazan valores repetidos, negativos, cero, decimales, posiciones omitidas y fuera de rango.
 
